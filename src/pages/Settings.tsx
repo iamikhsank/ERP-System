@@ -34,13 +34,8 @@ export default function SettingsPage() {
   const fetchUsers = async () => {
     setLoadingUsers(true);
     try {
-      const res = await callGas('Auth', 'getUsers'); // Or custom API
-      setUsers(res || [
-        { id: '1', email: 'iamikhsank@gmail.com', name: 'Ikhsan K', role: 'admin' },
-        { id: '2', email: 'manager@perusahaan.com', name: 'Manager Operational', role: 'manager' },
-        { id: '3', email: 'staff@perusahaan.com', name: 'Staff Gudang', role: 'staff' },
-        { id: '4', email: 'viewer@perusahaan.com', name: 'Viewer Keuangan', role: 'viewer' },
-      ]);
+      const res = await callGas('Auth', 'getUsers');
+      setUsers(res || []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -79,28 +74,39 @@ export default function SettingsPage() {
   const handleDeleteUserClick = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (window.confirm('Hapus pengguna ini?')) {
-      alert(`Pengguna dengan ID ${id} dihapus.`);
-      // Mock update local state
-      setUsers(prev => prev.filter(u => u.id !== id));
+      try {
+        await callGas('Auth', 'deleteUser', { id });
+        setUsers(prev => prev.filter(u => u.id !== id));
+      } catch (err) {
+        console.error('Gagal menghapus pengguna:', err);
+        alert('Gagal menghapus pengguna.');
+      }
     }
   };
 
   const handleUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedUser) {
-      // Edit mode
-      setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, name: userName, email: userEmail, role: userRole } : u));
-    } else {
-      // Create mode
-      const newUser: User = {
-        id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-        name: userName,
-        email: userEmail,
-        role: userRole
-      };
-      setUsers(prev => [...prev, newUser]);
+    try {
+      if (selectedUser) {
+        // Edit mode
+        const updatedUser = { id: selectedUser.id, name: userName, email: userEmail, role: userRole };
+        await callGas('Auth', 'updateUser', updatedUser);
+        setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, name: userName, email: userEmail, role: userRole } : u));
+      } else {
+        // Create mode
+        const newUserPayload = { name: userName, email: userEmail, role: userRole };
+        const res = await callGas('Auth', 'createUser', newUserPayload);
+        if (res && res.id) {
+          setUsers(prev => [...prev, { id: res.id, ...newUserPayload }]);
+        } else {
+          fetchUsers();
+        }
+      }
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error('Gagal menyimpan pengguna:', err);
+      alert('Gagal menyimpan pengguna ke Google Sheets.');
     }
-    setIsModalOpen(false);
   };
 
   const columns = [

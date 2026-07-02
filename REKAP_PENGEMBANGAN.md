@@ -1,3 +1,23 @@
+## 2026-07-02 — v0.5.2
+
+### Dihapus / Dioptimalkan
+- **Pembersihan UI & Penghapusan Floating Console**:
+  - Menghapus komponen tombol console mengapung (`ErrorConsole.tsx`) di sudut kiri bawah layar agar tampilan antarmuka (UI) jauh lebih bersih, rapi, dan profesional.
+  - Memodifikasi utilitas `logSystem` agar mencatat log sistem secara langsung ke standard browser developer tools console (`console.log`, `console.warn`, `console.error`) menggantikan penyimpanan state UI internal yang tidak diperlukan.
+
+---
+
+## 2026-07-02 — v0.5.1
+
+### Ditambahkan
+- **Estetika Baris Header Google Sheets Otomatis (`setup.gs`)**:
+  - Mengonfigurasi warna latar belakang baris header (Baris ke-1) menggunakan warna biru abu-abu gelap premium (`#1e293b` - Slate 800) yang kontras dan profesional.
+  - Memformat teks header menjadi **Tebal (Bold)** dan **Rata Tengah (Center)** untuk pembacaan kolom yang rapi.
+  - Membekukan baris pertama secara otomatis (`setFrozenRows(1)`) agar judul kolom tetap terlihat saat pengguna menggulir data ke bawah.
+  - Menambahkan penyesuaian lebar kolom otomatis (`autoResizeColumns`) yang menyesuaikan ruang horizontal berdasarkan panjang nama kolom.
+
+---
+
 ## 2026-07-02 — v0.5.0
 
 ### Ditambahkan
@@ -7,6 +27,7 @@
   - **HR**: Mendukung pengelolaan data karyawan (nama, jabatan, gaji, email, status).
   - **Procurement**: Mendukung pengajuan pengadaan dengan nomor berurutan otomatis (`PR-XXX`), persetujuan, dan penolakan.
   - **Sales**: Mendukung pembuatan pesanan penjualan dengan nomor otomatis (`SO-XXX`) dan pembaruan status pembayaran.
+  - **Manajemen User & Hak Akses (Auth)**: Mendukung pengelolaan daftar pengguna, pendaftaran akun baru, penyesuaian hak akses berdasarkan peran (*role-based access control* seperti Admin, Manager, Staff, Viewer), pembaruan data, hingga penghapusan secara persisten langsung ke tabel `Users` Google Sheets.
 - **Sinkronisasi Antar-Modul Otomatis**: Ketika pesanan penjualan diset menjadi "Lunas (Paid)", sistem secara otomatis mencatatkan entri pemasukan baru di modul Keuangan (Finance) lengkap dengan nama pelanggan dan referensi nomor pesanan.
 - **Kalkulasi Metrik Dashboard Dinamis**: Merombak total `/gas-src/modules/10-dashboard.gs` dari data tiruan statis menjadi perhitungan analitis waktu nyata (real-time) langsung dari database lembar kerja Google Sheets (pendapatan bersih, total transaksi, karyawan aktif, stok kritis, dan arus kas 6 bulan terakhir).
 

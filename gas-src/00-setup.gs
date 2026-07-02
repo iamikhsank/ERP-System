@@ -19,6 +19,23 @@ function runSetup() {
       sheet = ss.insertSheet(sheetDef.name);
       sheet.appendRow(sheetDef.headers);
     }
+    
+    // Terapkan format premium pada baris header (Baris ke-1)
+    const headerRange = sheet.getRange(1, 1, 1, sheetDef.headers.length);
+    headerRange.setBackground('#1e293b') // Slate 800 profesional
+               .setFontColor('#ffffff')  // Tulisan putih kontras
+               .setFontWeight('bold')    // Tebal
+               .setHorizontalAlignment('center'); // Rata tengah
+    
+    // Freeze baris pertama agar tidak ikut tergulung saat scroll
+    sheet.setFrozenRows(1);
+    
+    // Auto-adjust lebar kolom berdasarkan isi
+    try {
+      sheet.autoResizeColumns(1, sheetDef.headers.length);
+    } catch(e) {
+      // Abaikan jika tidak ada data/gagal di background run
+    }
   });
 
   // Seed default admin if Users is empty

@@ -38,8 +38,27 @@ function checkPermission(user, module, action) {
 }
 
 function handleAuthApi(action, payload) {
-  if (action === 'getCurrentUser') {
-    return successResponse(getCurrentUser());
+  try {
+    if (action === 'getCurrentUser') {
+      return successResponse(getCurrentUser());
+    }
+    if (action === 'getUsers') {
+      return successResponse(getSheetDataAsObjects('Users'));
+    }
+    if (action === 'createUser') {
+      const res = insertRow('Users', payload);
+      return successResponse(res);
+    }
+    if (action === 'updateUser') {
+      const res = updateRow('Users', payload.id, payload);
+      return successResponse(res);
+    }
+    if (action === 'deleteUser') {
+      const res = deleteRow('Users', payload.id);
+      return successResponse({ success: res });
+    }
+    return errorResponse('Invalid auth action');
+  } catch (err) {
+    return errorResponse(err.message);
   }
-  return errorResponse('Invalid auth action');
 }

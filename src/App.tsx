@@ -25,7 +25,6 @@ import ReportingPage from './pages/Reporting';
 import SettingsPage from './pages/Settings';
 
 import Toast, { ToastMessage } from './components/Toast';
-import ErrorConsole, { ErrorLog } from './components/ErrorConsole';
 
 interface User {
   name: string;
@@ -39,9 +38,8 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Notifications & Console logs state
+  // Notifications state
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const [logs, setLogs] = useState<ErrorLog[]>([]);
 
   // Add toast helper
   const showToast = (message: string, type: 'success' | 'warning' | 'error' | 'info' = 'success') => {
@@ -55,14 +53,14 @@ export default function App() {
 
   // Add system console log helper
   const logSystem = (message: string, severity: 'error' | 'warning' | 'info' = 'info', techDetails?: string) => {
-    const newLog: ErrorLog = {
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      timestamp: new Date().toLocaleTimeString('id-ID'),
-      severity,
-      message,
-      technicalDetails: techDetails
-    };
-    setLogs(prev => [newLog, ...prev]);
+    const output = `[${severity.toUpperCase()}] ${message}${techDetails ? ` | Details: ${techDetails}` : ''}`;
+    if (severity === 'error') {
+      console.error(output);
+    } else if (severity === 'warning') {
+      console.warn(output);
+    } else {
+      console.log(output);
+    }
   };
 
   const handleRemoveToast = (id: string) => {
@@ -220,13 +218,6 @@ export default function App() {
 
       {/* Toast Manager */}
       <Toast toasts={toasts} onClose={handleRemoveToast} />
-
-      {/* Production-Grade Error System Console UI */}
-      <ErrorConsole 
-        logs={logs} 
-        onClear={() => setLogs([])} 
-        userRole={user?.role || 'admin'} 
-      />
     </div>
   );
 }
