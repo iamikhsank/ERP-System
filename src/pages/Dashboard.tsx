@@ -1,6 +1,6 @@
 // src/pages/Dashboard.tsx
 import React, { useState, useEffect } from 'react';
-import { callGas } from '../api/gasClient';
+import { callGas, getGasCache } from '../api/gasClient';
 import { DollarSign, Package, Users, ShoppingCart, TrendingUp, AlertCircle, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 interface DashboardMetrics {
@@ -13,13 +13,19 @@ interface DashboardMetrics {
 }
 
 export default function DashboardPage() {
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Check if cache has data to prevent full-page blank loading screen
+  const cached = getGasCache('Dashboard', 'getMetrics');
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(cached || null);
+  const [loading, setLoading] = useState(!cached);
 
   useEffect(() => {
+    let active = true;
+
     async function fetchDashboard() {
       try {
         const res = await callGas('Dashboard', 'getMetrics');
+        if (!active) return;
+
         // Standardize structure
         setMetrics({
           totalRevenue: res?.totalRevenue || 157500000,
@@ -44,10 +50,18 @@ export default function DashboardPage() {
       } catch (e) {
         console.error('Error fetching dashboard metrics', e);
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
+
     fetchDashboard();
+
+    return () => {
+      // Clean up / Abort pending state update immediately on unmount
+      active = false;
+    };
   }, []);
 
   if (loading) {

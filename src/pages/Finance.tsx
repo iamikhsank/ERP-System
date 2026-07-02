@@ -1,6 +1,6 @@
 // src/pages/Finance.tsx
 import React, { useState, useEffect } from 'react';
-import { callGas } from '../api/gasClient';
+import { callGas, getGasCache } from '../api/gasClient';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { Edit2, Trash2, ArrowUpCircle, ArrowDownCircle, Wallet } from 'lucide-react';
@@ -15,8 +15,9 @@ interface FinanceRecord {
 }
 
 export default function FinancePage() {
-  const [records, setRecords] = useState<FinanceRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getGasCache('Finance', 'get');
+  const [records, setRecords] = useState<FinanceRecord[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<FinanceRecord | null>(null);
 
@@ -27,20 +28,24 @@ export default function FinancePage() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Sales');
 
-  const fetchFinance = async () => {
-    setLoading(true);
+  const fetchFinance = async (active = true) => {
+    if (!cached && active) setLoading(true);
     try {
       const res = await callGas('Finance', 'get');
-      setRecords(res || []);
+      if (active) setRecords(res || []);
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
+      if (active) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchFinance();
+    let active = true;
+    fetchFinance(active);
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Summary stats

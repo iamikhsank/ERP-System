@@ -1,3 +1,24 @@
+## 2026-07-02 — v0.4.0
+
+### Ditambahkan
+- **Proteksi Data Produksi & Tree-shaking Data Dummy**: Memisahkan logika mock secara ketat dengan menggunakan deteksi lingkungan `import.meta.env.DEV` di `/src/api/gasClient.ts`.
+  - Selama pengerjaan development lokal, data dummy tetap aktif demi kemudahan preview fungsional.
+  - Di dalam hasil build produksi (`npm run build`), data dummy dibersihkan (tree-shaken) sepenuhnya dari bundel keluaran akhir untuk keamanan, integritas privasi data enterprise, dan optimalisasi ukuran file.
+  - Menambahkan kegagalan aman (fail-safe) berupa penolakan asinkron dengan pesan edukatif terarah jika file rilis produksi dibuka langsung di luar Google Apps Script / Google Sheets.
+
+---
+
+## 2026-07-02 — v0.3.0
+
+### Ditambahkan
+- **In-Memory Cache System (Stale-While-Revalidate)**: Mengimplementasikan sistem penyimpanan data sementara berbasis Map di `/src/api/gasClient.ts` untuk melayani pembacaan data instan (`get` dan `getMetrics`) per modul. Pengguna yang membuka halaman baru akan langsung disajikan data dari cache (jika ada) sehingga transisi antarhalaman menjadi sangat cepat (instant transition) tanpa spinner loading berputar di seluruh layar. Di saat bersamaan, query asinkron berjalan di latar belakang untuk memperbarui data ke versi terbaru dari Google Sheets.
+- **Unmount-Safe Kill Pattern (Abort state update)**: Menambahkan pola penanganan pembatalan asinkron berbasis bendera status aktif (`active` flag) di dalam hook `useEffect` semua halaman modul utama (`Dashboard`, `Inventory`, `Finance`, `HR`, `Procurement`, `Sales`). Jika pengguna berpindah halaman dengan cepat sebelum panggilan `callGas` selesai, callback asinkron dari GAS yang tertunda akan langsung di-kill (diabaikan) sepenuhnya demi mencegah lag, tumpukan antrean, dan peringatan leak memori React karena memperbarui state pada komponen yang telah di-unmount.
+
+### Diubah
+- Memperbarui `/src/api/gasClient.ts` untuk mengotomatiskan pembersihan cache (cache invalidation) pada modul terkait dan dashboard ketika terjadi mutasi atau operasi penulisan data (`create`, `update`, `delete`, `approve`, `reject`, `updateStatus`).
+
+---
+
 ## 2026-07-02 — v0.2.0
 
 ### Ditambahkan

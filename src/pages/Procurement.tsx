@@ -1,6 +1,6 @@
 // src/pages/Procurement.tsx
 import React, { useState, useEffect } from 'react';
-import { callGas } from '../api/gasClient';
+import { callGas, getGasCache } from '../api/gasClient';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { CheckCircle2, XCircle, Clock, ShoppingCart, PlusCircle, AlertCircle } from 'lucide-react';
@@ -16,8 +16,9 @@ interface ProcurementRequest {
 }
 
 export default function ProcurementPage() {
-  const [requests, setRequests] = useState<ProcurementRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getGasCache('Procurement', 'get');
+  const [requests, setRequests] = useState<ProcurementRequest[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<ProcurementRequest | null>(null);
 
@@ -26,20 +27,24 @@ export default function ProcurementPage() {
   const [quantity, setQuantity] = useState(1);
   const [estimatedCost, setEstimatedCost] = useState(100000);
 
-  const fetchProcurement = async () => {
-    setLoading(true);
+  const fetchProcurement = async (active = true) => {
+    if (!cached && active) setLoading(true);
     try {
       const res = await callGas('Procurement', 'get');
-      setRequests(res || []);
+      if (active) setRequests(res || []);
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
+      if (active) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProcurement();
+    let active = true;
+    fetchProcurement(active);
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleAddClick = () => {

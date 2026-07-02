@@ -52,3 +52,24 @@ Untuk menghindari kegagalan out-of-memory pada environment build yang terbatas, 
 ### 5. Font & Warna
 - **Font**: Inter (Google Fonts CDN)
 - **Warna Utama**: Tailwind Default Scale (Gray-900 untuk sidebar, Blue-600 untuk primary buttons, Gray-50 untuk background).
+
+### 6. Optimasi Transisi Halaman & Manajemen Caching Ringan
+Aplikasi ini dikonfigurasi untuk menangani batasan koneksi asinkron Google Apps Script (`google.script.run`) melalui pendekatan frontend terarah:
+
+1. **Stale-While-Revalidate (SWR) Caching**:
+   - Fungsi global `getGasCache` dan `setGasCache` di `/src/api/gasClient.ts` menyimpan hasil query modul asinkron terbaru di memori.
+   - Saat berpindah halaman, halaman akan langsung merender data dari cache (jika tersedia), menghilangkan delay loading putih kosong (blank screens) bagi pengguna.
+   - Pemicuan sinkronisasi asinkron berjalan mulus di belakang layar untuk memperbarui tampilan jika terdapat perubahan terbaru.
+   
+2. **Invalidasi Cache Otomatis**:
+   - Setiap kali terjadi mutasi data (operasi tulis seperti `create`, `update`, `delete`, `approve`), cache modul tersebut serta cache modul `Dashboard` otomatis dibersihkan (`clearGasCache`) guna menjamin integritas kesegaran data.
+
+3. **Unmount-Safe Kill Pattern**:
+   - Hook `useEffect` pada seluruh modul halaman dibungkus dengan kontrol bendera status aktif (`active` boolean).
+   - Pada saat unmount (misal ketika pengguna berpindah menu), pembaruan state pada promise yang sedang berjalan otomatis dibatalkan/di-kill, menghindari tumpukan proses di browser (backlog threads) dan menjaga kinerja aplikasi tetap responsif.
+
+### 7. Isolasi Data Rilis Produksi vs. Lokal
+Untuk memastikan rilis produksi (`Dashboard-for-Spreadsheet.html` dan `Dashboard-for-Spreadsheet.txt`) benar-benar bersih dari data sampel/dummy dan hanya terhubung ke Google Sheets:
+1. **Tree-Shaking Data Dummy**: Variabel `mockData` di `/src/api/gasClient.ts` hanya diakses dalam blok kondisi `if ((import.meta as any).env.DEV)`. Saat dijalankan dalam skrip produksi (`npm run build`), modul bundler Vite secara otomatis memotong (tree-shaking) seluruh struktur data dummy tersebut agar tidak masuk ke hasil kompilasi akhir.
+2. **Kewajiban Lingkungan Google Sheets**: Jika aplikasi rilis produksi dibuka di luar platform Google Sheets (yaitu `window.google.script` tidak terdeteksi), sistem secara otomatis memblokir pemanggilan asinkron dan memberikan pesan kesalahan edukatif berbahasa Indonesia yang memandu pengguna untuk mengaksesnya melalui Google Sheets.
+

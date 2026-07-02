@@ -1,6 +1,6 @@
 // src/pages/Inventory.tsx
 import React, { useState, useEffect } from 'react';
-import { callGas } from '../api/gasClient';
+import { callGas, getGasCache } from '../api/gasClient';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { Edit2, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -16,8 +16,9 @@ interface InventoryItem {
 }
 
 export default function InventoryPage() {
-  const [items, setItems] = useState<InventoryItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getGasCache('Inventory', 'get');
+  const [items, setItems] = useState<InventoryItem[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
@@ -28,20 +29,24 @@ export default function InventoryPage() {
   const [warehouse, setWarehouse] = useState('Gudang Utama');
   const [minStock, setMinStock] = useState(5);
 
-  const fetchInventory = async () => {
-    setLoading(true);
+  const fetchInventory = async (active = true) => {
+    if (!cached && active) setLoading(true);
     try {
       const res = await callGas('Inventory', 'get');
-      setItems(res || []);
+      if (active) setItems(res || []);
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
+      if (active) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchInventory();
+    let active = true;
+    fetchInventory(active);
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleAddClick = () => {

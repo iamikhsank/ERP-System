@@ -1,6 +1,6 @@
 // src/pages/HR.tsx
 import React, { useState, useEffect } from 'react';
-import { callGas } from '../api/gasClient';
+import { callGas, getGasCache } from '../api/gasClient';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { Edit2, Trash2, Users, Briefcase, Award } from 'lucide-react';
@@ -15,8 +15,9 @@ interface Employee {
 }
 
 export default function HRPage() {
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getGasCache('HR', 'get');
+  const [employees, setEmployees] = useState<Employee[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
@@ -27,20 +28,24 @@ export default function HRPage() {
   const [email, setEmail] = useState('');
   const [salary, setSalary] = useState(5000000);
 
-  const fetchEmployees = async () => {
-    setLoading(true);
+  const fetchEmployees = async (active = true) => {
+    if (!cached && active) setLoading(true);
     try {
       const res = await callGas('HR', 'get');
-      setEmployees(res || []);
+      if (active) setEmployees(res || []);
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
+      if (active) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchEmployees();
+    let active = true;
+    fetchEmployees(active);
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleAddClick = () => {

@@ -1,6 +1,6 @@
 // src/pages/Sales.tsx
 import React, { useState, useEffect } from 'react';
-import { callGas } from '../api/gasClient';
+import { callGas, getGasCache } from '../api/gasClient';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { Truck, CheckCircle, Clock, AlertCircle, ShoppingBag } from 'lucide-react';
@@ -15,8 +15,9 @@ interface SalesOrder {
 }
 
 export default function SalesPage() {
-  const [orders, setOrders] = useState<SalesOrder[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getGasCache('Sales', 'get');
+  const [orders, setOrders] = useState<SalesOrder[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Form states
@@ -24,20 +25,24 @@ export default function SalesPage() {
   const [total, setTotal] = useState(0);
   const [status, setStatus] = useState<'Draft' | 'Sent' | 'Paid' | 'Cancelled'>('Draft');
 
-  const fetchSales = async () => {
-    setLoading(true);
+  const fetchSales = async (active = true) => {
+    if (!cached && active) setLoading(true);
     try {
       const res = await callGas('Sales', 'get');
-      setOrders(res || []);
+      if (active) setOrders(res || []);
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
+      if (active) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchSales();
+    let active = true;
+    fetchSales(active);
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleAddClick = () => {
