@@ -10,12 +10,14 @@
   - `Sales.tsx`: Sales Order tracking, penentuan status pembayaran lunas/batal.
   - `Reporting.tsx`: Antarmuka filter laporan rentang tanggal, mockup cetak PDF/Excel.
   - `Settings.tsx`: Konfigurasi organisasi, format penomoran dokumen otomatis (Auto-numbering), manajemen pengguna & hak akses (Role-Based Access Control / RBAC).
+- **ErrorBoundary Component (`src/components/ErrorBoundary.tsx`)**: Mengimplementasikan penanganan error global (ErrorBoundary) menggunakan React Class Component yang ramah pengguna. Menampilkan pesan galat berbahasa Indonesia, tombol Reload, tombol kembali ke Beranda, serta log diagnostik teknis lengkap yang dapat disalin guna mencegah layar putih kosong (blank white screen) bila terjadi crash JavaScript di lingkungan Google Apps Script.
 - **Reusable UI Components**:
   - `DataTable.tsx`: Tabel pintar yang mendukung Sorting, Filtering (Search), dan Pagination.
   - `Modal.tsx`: Jendela dialog modular pop-up untuk form entri data secara dinamis.
   - `Toast.tsx`: Notifikasi popup adaptif untuk feedback asinkron instan.
   - `ErrorConsole.tsx`: Panel debug log konsol standar industri (Production-Grade) sesuai PRD 4.2 dengan tombol salin detail teknis yang dibatasi hanya untuk peran Admin.
 - **Tipe Data Sistem (`src/types.ts`)**: Mendefinisikan kontrak tipe data TypeScript yang seragam untuk semua entitas modul ERP.
+- **Pustaka Tipe Data TypeScript (`@types/react`, `@types/react-dom`)**: Ditambahkan sebagai `devDependencies` untuk memastikan kompilasi tipe data komponen kelas React berjalan sempurna.
 
 ### Diubah
 - Mengintegrasikan modul halaman dan komponen ke dalam berkas utama `/src/App.tsx`.

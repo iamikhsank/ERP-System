@@ -36,6 +36,11 @@ Untuk memastikan stabilitas eksekusi di Google Apps Script editor, seluruh libra
 
 Selain itu, opsi `minify: false` diaktifkan di `vite.config.ts`, serta diterapkan skrip pasca-proses otomatis (**safe line-splitter** di `/scripts/build-gas.mjs`) yang memotong dan merapikan seluruh baris kode yang melebihi **300 karakter** tanpa merusak sintaksis (misalnya membagi import multipel, class CSS panjang, atau baris HTML panjang pada pemisah aman seperti koma `,`, spasi ` `, atau titik koma `;`).
 
+### 3a. Penanganan Galat Global (ErrorBoundary)
+Untuk mencegah terjadinya layar putih kosong (blank white screen) jika terjadi kegagalan eksekusi JavaScript (misal masalah pemuatan CDN atau bentrokan state asinkron):
+1. **Penyekatan Error**: Seluruh pohon komponen React dibungkus dengan komponen `ErrorBoundary` berbasis Class Component di `/src/main.tsx`.
+2. **Antarmuka Pemulihan**: Jika terjadi kegagalan, aplikasi akan mengalihkan ke halaman ramah pengguna berisi tombol **Muat Ulang Dashboard** (untuk me-refresh window), **Kembali ke Beranda** (untuk soft state reset), serta panel diagnostik yang menyajikan stack trace lengkap yang dapat disalin dengan mudah.
+
 ### 4. Konfigurasi Scripts & Batasan Memori Build (Maksimal 2 GB)
 Untuk menghindari kegagalan out-of-memory pada environment build yang terbatas, proses build dikonfigurasi menggunakan bendera Node `--max-old-space-size=2048` guna membatasi penggunaan RAM maksimal di angka 2 GB.
 
