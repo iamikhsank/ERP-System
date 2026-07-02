@@ -18,6 +18,10 @@ function runSetup() {
     if (!sheet) {
       sheet = ss.insertSheet(sheetDef.name);
       sheet.appendRow(sheetDef.headers);
+    } else {
+      // Pastikan baris pertama diisi dengan header yang tepat tanpa merusak data di bawahnya
+      const range = sheet.getRange(1, 1, 1, sheetDef.headers.length);
+      range.setValues([sheetDef.headers]);
     }
     
     // Terapkan format premium pada baris header (Baris ke-1)
