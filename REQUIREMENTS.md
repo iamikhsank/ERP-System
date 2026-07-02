@@ -73,3 +73,8 @@ Untuk memastikan rilis produksi (`Dashboard-for-Spreadsheet.html` dan `Dashboard
 1. **Tree-Shaking Data Dummy**: Variabel `mockData` di `/src/api/gasClient.ts` hanya diakses dalam blok kondisi `if ((import.meta as any).env.DEV)`. Saat dijalankan dalam skrip produksi (`npm run build`), modul bundler Vite secara otomatis memotong (tree-shaking) seluruh struktur data dummy tersebut agar tidak masuk ke hasil kompilasi akhir.
 2. **Kewajiban Lingkungan Google Sheets**: Jika aplikasi rilis produksi dibuka di luar platform Google Sheets (yaitu `window.google.script` tidak terdeteksi), sistem secara otomatis memblokir pemanggilan asinkron dan memberikan pesan kesalahan edukatif berbahasa Indonesia yang memandu pengguna untuk mengaksesnya melalui Google Sheets.
 
+### 8. Integrasi CRUD Penuh & Perhitungan Waktu Nyata (Real-Time)
+1. **Fungsi CRUD Google Sheets**: Semua halaman modul utama telah diintegrasikan secara penuh dengan fungsi database Google Sheets di `/gas-src/99-utils.gs` (`insertRow`, `updateRow`, `deleteRow`). Perubahan data dari pengguna disimpan langsung secara persisten ke sheet masing-masing.
+2. **Kalkulasi Metrik Dashboard**: Halaman dashboard mengabaikan data tiruan statis di server dan secara dinamis menjumlahkan seluruh transaksi keuangan, menghitung jumlah karyawan aktif, mendeteksi stok barang di bawah ambang batas minimal secara real-time, serta memetakan tren arus kas asinkron langsung dari data spreadsheet riil.
+3. **Automasi Berantai (Inter-Module Workflow)**: Menyetujui status pesanan penjualan sebagai "Lunas" akan secara otomatis memicu pembuatan entri pencatatan buku kas masuk baru di dalam sheet Keuangan (Finance).
+

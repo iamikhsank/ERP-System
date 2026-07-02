@@ -5,10 +5,10 @@ function runSetup() {
   
   const requiredSheets = [
     { name: 'Users', headers: ['id', 'email', 'role', 'name', 'createdAt'] },
-    { name: 'Inventory', headers: ['id', 'sku', 'name', 'quantity', 'warehouse', 'createdAt', 'updatedAt'] },
-    { name: 'Finance', headers: ['id', 'type', 'amount', 'date', 'description', 'createdAt'] },
-    { name: 'HR', headers: ['id', 'employeeName', 'position', 'status', 'createdAt'] },
-    { name: 'Procurement', headers: ['id', 'requestNo', 'item', 'quantity', 'status', 'createdAt'] },
+    { name: 'Inventory', headers: ['id', 'sku', 'name', 'quantity', 'warehouse', 'minStock', 'createdAt', 'updatedAt'] },
+    { name: 'Finance', headers: ['id', 'type', 'amount', 'date', 'description', 'category', 'createdAt'] },
+    { name: 'HR', headers: ['id', 'employeeName', 'position', 'status', 'email', 'salary', 'createdAt'] },
+    { name: 'Procurement', headers: ['id', 'requestNo', 'item', 'quantity', 'status', 'estimatedCost', 'createdAt'] },
     { name: 'Sales', headers: ['id', 'orderNo', 'customer', 'total', 'status', 'createdAt'] },
     { name: 'Settings', headers: ['key', 'value'] }
   ];

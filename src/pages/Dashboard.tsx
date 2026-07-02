@@ -28,24 +28,12 @@ export default function DashboardPage() {
 
         // Standardize structure
         setMetrics({
-          totalRevenue: res?.totalRevenue || 157500000,
-          totalOrders: res?.totalOrders || 342,
-          activeUsers: res?.activeUsers || 28,
-          lowStockItems: res?.lowStockItems || 5,
-          cashflow: res?.cashflow || [
-            { month: 'Jan', income: 45000000, expense: 30000000 },
-            { month: 'Feb', income: 52000000, expense: 34000000 },
-            { month: 'Mar', income: 49000000, expense: 41000000 },
-            { month: 'Apr', income: 63000000, expense: 39000000 },
-            { month: 'Mei', income: 58000000, expense: 45000000 },
-            { month: 'Jun', income: 71000000, expense: 48000000 },
-          ],
-          recentActivities: res?.recentActivities || [
-            { id: '1', time: '10:15 WIB', type: 'Sales', message: 'Invoice #INV-2026-003 diterbitkan untuk Customer PT. Maju Jaya', severity: 'success' },
-            { id: '2', time: '09:30 WIB', type: 'Inventory', message: 'Pemberitahuan: Stok Laptop Lenovo menipis di Gudang Utama (sisa 2 unit)', severity: 'warning' },
-            { id: '3', time: '08:45 WIB', type: 'Procurement', message: 'Purchase Order #PO-2026-002 disetujui oleh Direktur', severity: 'success' },
-            { id: '4', time: 'Kemarin', type: 'HR', message: 'Pencatatan kehadiran bulanan berhasil diproses untuk payroll', severity: 'info' },
-          ]
+          totalRevenue: res && res.totalRevenue !== undefined ? res.totalRevenue : 0,
+          totalOrders: res && res.totalOrders !== undefined ? res.totalOrders : 0,
+          activeUsers: res && res.activeUsers !== undefined ? res.activeUsers : 0,
+          lowStockItems: res && res.lowStockItems !== undefined ? res.lowStockItems : 0,
+          cashflow: res && res.cashflow ? res.cashflow : [],
+          recentActivities: res && res.recentActivities ? res.recentActivities : []
         });
       } catch (e) {
         console.error('Error fetching dashboard metrics', e);

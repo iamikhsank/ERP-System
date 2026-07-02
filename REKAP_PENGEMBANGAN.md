@@ -1,3 +1,17 @@
+## 2026-07-02 — v0.5.0
+
+### Ditambahkan
+- **Integrasi Penuh CRUD Google Sheets**: Mengimplementasikan logika manipulasi baris spreadsheet dinamis (`insertRow`, `updateRow`, `deleteRow`) di dalam `/gas-src/99-utils.gs` dan menghubungkannya ke modul backend:
+  - **Inventory**: Mendukung penambahan barang baru, pengeditan info, dan penghapusan barang.
+  - **Finance**: Mendukung pencatatan transaksi pemasukan/pengeluaran baru, pengeditan, serta penghapusan.
+  - **HR**: Mendukung pengelolaan data karyawan (nama, jabatan, gaji, email, status).
+  - **Procurement**: Mendukung pengajuan pengadaan dengan nomor berurutan otomatis (`PR-XXX`), persetujuan, dan penolakan.
+  - **Sales**: Mendukung pembuatan pesanan penjualan dengan nomor otomatis (`SO-XXX`) dan pembaruan status pembayaran.
+- **Sinkronisasi Antar-Modul Otomatis**: Ketika pesanan penjualan diset menjadi "Lunas (Paid)", sistem secara otomatis mencatatkan entri pemasukan baru di modul Keuangan (Finance) lengkap dengan nama pelanggan dan referensi nomor pesanan.
+- **Kalkulasi Metrik Dashboard Dinamis**: Merombak total `/gas-src/modules/10-dashboard.gs` dari data tiruan statis menjadi perhitungan analitis waktu nyata (real-time) langsung dari database lembar kerja Google Sheets (pendapatan bersih, total transaksi, karyawan aktif, stok kritis, dan arus kas 6 bulan terakhir).
+
+---
+
 ## 2026-07-02 — v0.4.0
 
 ### Ditambahkan

@@ -17,11 +17,23 @@ function getCurrentUser() {
 }
 
 function checkPermission(user, module, action) {
+  const isReadAction = action === 'get' || action === 'getMetrics' || action === 'getCurrentUser' || action === 'read';
   if (user.role === 'admin') return true;
-  if (user.role === 'viewer' && action === 'read') return true;
-  if (user.role === 'manager' && action === 'read') return true;
-  if (user.role === 'manager' && action === 'approve') return true;
-  if (user.role === 'staff') return true; // simplified, ideally check specific module
+  if (isReadAction) return true; // Everyone can read
+  
+  if (user.role === 'viewer') return false; // Viewer cannot write
+  
+  if (user.role === 'manager') {
+    if (action === 'approve' || action === 'reject' || action === 'create' || action === 'update' || action === 'updateStatus') return true;
+    return false;
+  }
+  
+  if (user.role === 'staff') {
+    // Staff can create and update, but can't delete or run admin actions
+    if (action === 'create' || action === 'update' || action === 'updateStatus') return true;
+    return false;
+  }
+  
   return false;
 }
 
