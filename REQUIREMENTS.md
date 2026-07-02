@@ -1,0 +1,49 @@
+## 10. Konfigurasi Sistem ERP GAS + Vite
+
+### 1. Daftar Library & Versi CDN
+| Library | Versi | CDN URL | Dipakai di | Alasan |
+|---------|-------|---------|------------|--------|
+| React | 19.0.0-rc.0 | https://esm.sh/react@19.0.0-rc.0 | Core UI | Ringan & cepat dimuat via CDN |
+| React-DOM | 19.0.0-rc.0 | https://esm.sh/react-dom@19.0.0-rc.0 | Core Render | Rendering UI via ESM Import Maps |
+| Lucide React | 0.460.0 | https://esm.sh/lucide-react@0.460.0 | Iconography | Di-load dari CDN secara modular |
+| Motion (Framer) | 12.23.24 | https://esm.sh/motion@12.23.24 | Animasi UI | Animasi transisi modular via CDN |
+| Tailwind CSS | 4.1.14 | (Bundled Inline) | Styling | Utility-first styling terkompilasi |
+| Vite SingleFile | 2.3.3 | (Dev Dependency) | Build Tool | Output mandiri single-file HTML |
+
+### 2. Import Map
+```html
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0-rc.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0-rc.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0-rc.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.460.0",
+    "motion": "https://esm.sh/motion@12.23.24",
+    "motion/react": "https://esm.sh/motion@12.23.24",
+    "lucide": "https://esm.sh/lucide@0.460.0",
+    "chart.js": "https://esm.sh/chart.js@4.4.1",
+    "date-fns": "https://esm.sh/date-fns@3.6.0"
+  }
+}
+</script>
+```
+
+### 3. Konfigurasi Vite & Pembatasan Panjang Baris (Limit 300 Chars)
+Vite dikonfigurasi menggunakan plugin `vite-plugin-singlefile` agar seluruh aset lokal (seperti CSS Tailwind terkompilasi) di-inline ke dalam satu file `index.html`. 
+
+Untuk memastikan stabilitas eksekusi di Google Apps Script editor, seluruh library berat (**React**, **React-DOM**, **Lucide-React**, **Motion**) telah **dieksternalisasi secara penuh ke CDN via Import Maps**, sehingga ukuran bundle HTML berkurang drastis (hanya memuat logika bisnis lokal). 
+
+Selain itu, opsi `minify: false` diaktifkan di `vite.config.ts`, serta diterapkan skrip pasca-proses otomatis (**safe line-splitter** di `/scripts/build-gas.mjs`) yang memotong dan merapikan seluruh baris kode yang melebihi **300 karakter** tanpa merusak sintaksis (misalnya membagi import multipel, class CSS panjang, atau baris HTML panjang pada pemisah aman seperti koma `,`, spasi ` `, atau titik koma `;`).
+
+### 4. Konfigurasi Scripts & Batasan Memori Build (Maksimal 2 GB)
+Untuk menghindari kegagalan out-of-memory pada environment build yang terbatas, proses build dikonfigurasi menggunakan bendera Node `--max-old-space-size=2048` guna membatasi penggunaan RAM maksimal di angka 2 GB.
+
+- `dev`: Menjalankan server dev Vite.
+- `build`: Menjalankan build Vite + menjalankan skrip pasca-proses `build-gas.mjs` dengan limit memori 2 GB.
+- `build:gas`: Menggabungkan multi-file `gas-src/*.gs` ke dalam `dist-gas/code.gs` dan menyalin serta memformat file output HTML dengan limit memori 2 GB.
+- `build:all`: Gabungan penuh dari build frontend dan backend.
+
+### 5. Font & Warna
+- **Font**: Inter (Google Fonts CDN)
+- **Warna Utama**: Tailwind Default Scale (Gray-900 untuk sidebar, Blue-600 untuk primary buttons, Gray-50 untuk background).
