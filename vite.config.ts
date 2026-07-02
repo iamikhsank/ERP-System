@@ -17,7 +17,8 @@ export default defineConfig(() => {
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
     build: {
-      minify: false,
+      minify: 'esbuild' as const,
+      cssMinify: true,
       rollupOptions: {
         external: [
           'react',
@@ -26,9 +27,7 @@ export default defineConfig(() => {
           'lucide-react',
           'motion',
           'motion/react',
-          'lucide',
-          'chart.js',
-          'date-fns'
+          'lucide'
         ]
       }
     }

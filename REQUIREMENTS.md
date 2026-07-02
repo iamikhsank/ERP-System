@@ -3,10 +3,10 @@
 ### 1. Daftar Library & Versi CDN
 | Library | Versi | CDN URL | Dipakai di | Alasan |
 |---------|-------|---------|------------|--------|
-| React | 19.0.0-rc.0 | https://esm.sh/react@19.0.0-rc.0 | Core UI | Ringan & cepat dimuat via CDN |
-| React-DOM | 19.0.0-rc.0 | https://esm.sh/react-dom@19.0.0-rc.0 | Core Render | Rendering UI via ESM Import Maps |
-| Lucide React | 0.460.0 | https://esm.sh/lucide-react@0.460.0 | Iconography | Di-load dari CDN secara modular |
-| Motion (Framer) | 12.23.24 | https://esm.sh/motion@12.23.24 | Animasi UI | Animasi transisi modular via CDN |
+| React | 19.0.1 | https://esm.sh/react@19.0.1 | Core UI | Ringan, cepat dimuat, versi selaras lokal |
+| React-DOM | 19.0.1 | https://esm.sh/react-dom@19.0.1 | Core Render | Rendering UI via ESM Import Maps |
+| Lucide React | 0.460.0 | https://esm.sh/lucide-react@0.460.0?external=react,react-dom | Iconography | Di-load dari CDN asinkron anti dual-react |
+| Motion (Framer) | 12.23.24 | https://esm.sh/motion@12.23.24?external=react,react-dom | Animasi UI | Animasi transisi modular terisolasi |
 | Tailwind CSS | 4.1.14 | (Bundled Inline) | Styling | Utility-first styling terkompilasi |
 | Vite SingleFile | 2.3.3 | (Dev Dependency) | Build Tool | Output mandiri single-file HTML |
 
@@ -15,15 +15,13 @@
 <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@19.0.0-rc.0",
-    "react-dom": "https://esm.sh/react-dom@19.0.0-rc.0",
-    "react-dom/client": "https://esm.sh/react-dom@19.0.0-rc.0/client",
-    "lucide-react": "https://esm.sh/lucide-react@0.460.0",
-    "motion": "https://esm.sh/motion@12.23.24",
-    "motion/react": "https://esm.sh/motion@12.23.24",
-    "lucide": "https://esm.sh/lucide@0.460.0",
-    "chart.js": "https://esm.sh/chart.js@4.4.1",
-    "date-fns": "https://esm.sh/date-fns@3.6.0"
+    "react": "https://esm.sh/react@19.0.1",
+    "react-dom": "https://esm.sh/react-dom@19.0.1",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.1/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.460.0?external=react,react-dom",
+    "motion": "https://esm.sh/motion@12.23.24?external=react,react-dom",
+    "motion/react": "https://esm.sh/motion@12.23.24?external=react,react-dom",
+    "lucide": "https://esm.sh/lucide@0.460.0"
   }
 }
 </script>
