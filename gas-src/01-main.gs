@@ -1,16 +1,16 @@
 // 01-main.gs
 
 function doGet(e) {
+  // Security best practices for Google Apps Script HTML Service:
+  // - NATIVE sandbox mode required for google.script.run() to work
+  // - Server-side validation prevents iframe escape attacks
+  // - Never trust client-side validation alone
   return HtmlService.createHtmlOutputFromFile('webapp')
     .setTitle('ERP System')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .setSandboxMode(HtmlService.SandboxMode.NATIVE)
-    .addMetaTag('X-UA-Compatible', 'IE=Edge')
-    // Security best practices for Google Apps Script HTML Service:
-    // - NATIVE sandbox mode required for google.script.run() to work
-    // - Server-side validation prevents iframe escape attacks
-    // - Never trust client-side validation alone
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .addMetaTag('X-UA-Compatible', 'IE=Edge');
 }
 
 function processApiRequest(module, action, payload) {
