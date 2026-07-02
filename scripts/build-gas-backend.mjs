@@ -7,19 +7,22 @@ const __dirname = path.dirname(__filename);
 
 const GAS_SRC_DIR = path.resolve(__dirname, '../gas-src');
 const DIST_GAS_DIR = path.resolve(__dirname, '../dist-gas');
-const DIST_DIR = path.resolve(__dirname, '../dist');
 
 // Ensure dist-gas directory exists
 if (!fs.existsSync(DIST_GAS_DIR)) {
   fs.mkdirSync(DIST_GAS_DIR, { recursive: true });
 }
 
+console.log('--- Memulai Build Backend GAS (.gs) ---');
+
 // 1. Copy setup.gs
 const setupSrc = path.join(GAS_SRC_DIR, '00-setup.gs');
 const setupDest = path.join(DIST_GAS_DIR, 'setup.gs');
 if (fs.existsSync(setupSrc)) {
   fs.copyFileSync(setupSrc, setupDest);
-  console.log('Copied setup.gs');
+  console.log('✓ setup.gs berhasil disalin ke dist-gas/setup.gs');
+} else {
+  console.warn('⚠ File gas-src/00-setup.gs tidak ditemukan!');
 }
 
 // 2. Concat code.gs
@@ -38,35 +41,19 @@ const codeFiles = [
 ];
 
 let codeContent = '';
+let successfullyMerged = 0;
+
 for (const file of codeFiles) {
   const filePath = path.join(GAS_SRC_DIR, file);
   if (fs.existsSync(filePath)) {
     const content = fs.readFileSync(filePath, 'utf8');
     codeContent += `// ==== ${file} ====\n${content}\n\n`;
+    successfullyMerged++;
+  } else {
+    console.warn(`⚠ File modul ${file} tidak ditemukan di gas-src/`);
   }
 }
 
 fs.writeFileSync(path.join(DIST_GAS_DIR, 'code.gs'), codeContent);
-console.log('Generated code.gs');
-
-// 3. Format and sync index.html
-function formatHtmlForGas(html) {
-  // Remove unnecessary whitespaces between HTML tags to optimize size
-  return html.replace(/>\s+</g, '><').trim();
-}
-
-const htmlSrc = path.join(DIST_DIR, 'index.html');
-const destHtml = path.resolve(__dirname, '../Dashboard-for-Spreadsheet.html');
-const destTxt = path.resolve(__dirname, '../Dashboard-for-Spreadsheet.txt');
-
-if (fs.existsSync(htmlSrc)) {
-  const rawHtml = fs.readFileSync(htmlSrc, 'utf8');
-  const finalHtml = formatHtmlForGas(rawHtml);
-  
-  // Save to all destinations
-  fs.writeFileSync(htmlSrc, finalHtml, 'utf8');
-  fs.writeFileSync(destHtml, finalHtml, 'utf8');
-  fs.writeFileSync(destTxt, finalHtml, 'utf8');
-  console.log('Successfully formatted index.html and synced to GAS dashboard files using Terser minification');
-}
-
+console.log(`✓ code.gs berhasil dibuat (${successfullyMerged}/${codeFiles.length} modul digabungkan)`);
+console.log('--- Build Backend GAS Selesai ---');

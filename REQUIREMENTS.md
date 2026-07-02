@@ -45,9 +45,9 @@ Untuk mencegah terjadinya layar putih kosong (blank white screen) jika terjadi k
 Untuk menghindari kegagalan out-of-memory pada environment build yang terbatas, proses build dikonfigurasi menggunakan bendera Node `--max-old-space-size=2048` guna membatasi penggunaan RAM maksimal di angka 2 GB.
 
 - `dev`: Menjalankan server dev Vite.
-- `build`: Menjalankan build Vite + menjalankan skrip pasca-proses `build-gas.mjs` dengan limit memori 2 GB.
-- `build:gas`: Menggabungkan multi-file `gas-src/*.gs` ke dalam `dist-gas/code.gs` dan menyalin serta memformat file output HTML dengan limit memori 2 GB.
-- `build:all`: Gabungan penuh dari build frontend dan backend.
+- `build:html`: Membangun file frontend menggunakan Vite, memformat, dan menyalinnya ke file rilis HTML (`Dashboard-for-Spreadsheet.html` dan `.txt`).
+- `build:gas`: Menyusun backend Google Apps Script dengan menggabungkan multi-file `gas-src/*.gs` ke dalam `dist-gas/code.gs` dan menyalin `setup.gs` (sangat ringan, cepat, tanpa proses Vite).
+- `build` / `build:all`: Menjalankan proses build penuh secara berurutan (`build:html` diikuti oleh `build:gas`).
 
 ### 5. Font & Warna
 - **Font**: Inter (Google Fonts CDN)

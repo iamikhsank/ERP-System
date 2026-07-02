@@ -4,6 +4,11 @@
 - **Pembersihan UI & Penghapusan Floating Console**:
   - Menghapus komponen tombol console mengapung (`ErrorConsole.tsx`) di sudut kiri bawah layar agar tampilan antarmuka (UI) jauh lebih bersih, rapi, dan profesional.
   - Memodifikasi utilitas `logSystem` agar mencatat log sistem secara langsung ke standard browser developer tools console (`console.log`, `console.warn`, `console.error`) menggantikan penyimpanan state UI internal yang tidak diperlukan.
+- **Pemisahan Pipeline Build (Frontend vs Backend GAS)**:
+  - Memisahkan build monolithic yang berat menjadi dua pipeline mandiri:
+    - `npm run build:gas` (Membangun backend `.gs` saja secara instan tanpa proses transpilation Vite yang berat).
+    - `npm run build:html` (Menjalankan kompilasi aset Web via Vite dan menyuntikkannya ke file single-file HTML).
+    - `npm run build` (Mengeksekusi keduanya secara bersamaan untuk kenyamanan rilis penuh).
 
 ---
 
