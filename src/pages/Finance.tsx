@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { callGas, getGasCache } from '../api/gasClient';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
-import { Edit2, Trash2, ArrowUpCircle, ArrowDownCircle, Wallet } from 'lucide-react';
+import { Edit2, Trash2, ArrowUpCircle, ArrowDownCircle, Wallet, ChevronDown } from 'lucide-react';
 
 interface FinanceRecord {
   id: string;
@@ -114,11 +114,11 @@ export default function FinancePage() {
     { 
       header: 'Tipe', 
       accessor: (row: FinanceRecord) => (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-          row.type === 'Income' ? 'bg-green-50 text-green-700' : 'bg-rose-50 text-rose-700'
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${
+          row.type === 'Income' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
         }`}>
-          {row.type === 'Income' ? <ArrowUpCircle className="w-3.5 h-3.5" /> : <ArrowDownCircle className="w-3.5 h-3.5" />}
-          {row.type === 'Income' ? 'Pemasukan' : 'Pengeluaran'}
+          {row.type === 'Income' ? <ArrowUpCircle className="w-3.5 h-3.5 text-emerald-500" /> : <ArrowDownCircle className="w-3.5 h-3.5 text-rose-500" />}
+          {row.type === 'Income' ? 'PEMASUKAN' : 'PENGELUARAN'}
         </span>
       ),
       sortKey: 'type' as keyof FinanceRecord 
@@ -128,7 +128,7 @@ export default function FinancePage() {
     { 
       header: 'Jumlah (Nominal)', 
       accessor: (row: FinanceRecord) => (
-        <span className={`font-bold ${row.type === 'Income' ? 'text-green-600' : 'text-rose-600'}`}>
+        <span className={`font-display font-bold ${row.type === 'Income' ? 'text-emerald-600' : 'text-rose-600'}`}>
           Rp {Number(row.amount).toLocaleString('id-ID')}
         </span>
       ),
@@ -145,15 +145,17 @@ export default function FinancePage() {
         <div className="flex items-center gap-2">
           <button 
             onClick={(e) => handleEditClick(row, e)}
-            className="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
+            className="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-100 transition-all cursor-pointer"
+            title="Edit"
           >
-            <Edit2 className="w-4 h-4" />
+            <Edit2 className="w-3.5 h-3.5" />
           </button>
           <button 
             onClick={(e) => handleDeleteClick(row.id, e)}
-            className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded transition-colors"
+            className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 rounded-xl border border-rose-150/40 transition-all cursor-pointer"
+            title="Hapus"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
       )
@@ -161,36 +163,38 @@ export default function FinancePage() {
   ];
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
+    <div className="space-y-6 h-full flex flex-col animate-in fade-in duration-300">
       {/* Mini Profit & Loss Summary Widgets */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-white p-5 rounded-xl border border-gray-150 shadow-sm flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total Pemasukan</span>
-            <p className="text-xl font-bold text-green-600">Rp {totalIncome.toLocaleString('id-ID')}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Pemasukan</span>
+            <p className="text-xl font-bold text-emerald-600 font-display">Rp {totalIncome.toLocaleString('id-ID')}</p>
           </div>
-          <div className="p-3 bg-green-50 text-green-600 rounded-xl">
-            <ArrowUpCircle className="w-5 h-5" />
-          </div>
-        </div>
-        <div className="bg-white p-5 rounded-xl border border-gray-150 shadow-sm flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total Pengeluaran</span>
-            <p className="text-xl font-bold text-rose-600">Rp {totalExpense.toLocaleString('id-ID')}</p>
-          </div>
-          <div className="p-3 bg-rose-50 text-rose-600 rounded-xl">
-            <ArrowDownCircle className="w-5 h-5" />
+          <div className="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 flex items-center justify-center">
+            <ArrowUpCircle className="w-5 h-5 stroke-[2]" />
           </div>
         </div>
-        <div className="bg-white p-5 rounded-xl border border-gray-150 shadow-sm flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Laba Bersih</span>
-            <p className={`text-xl font-bold ${netProfit >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Pengeluaran</span>
+            <p className="text-xl font-bold text-rose-600 font-display">Rp {totalExpense.toLocaleString('id-ID')}</p>
+          </div>
+          <div className="w-11 h-11 bg-rose-50 text-rose-600 rounded-xl border border-rose-100 flex items-center justify-center">
+            <ArrowDownCircle className="w-5 h-5 stroke-[2]" />
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Laba Bersih</span>
+            <p className={`text-xl font-bold font-display ${netProfit >= 0 ? 'text-indigo-600' : 'text-rose-600'}`}>
               Rp {netProfit.toLocaleString('id-ID')}
             </p>
           </div>
-          <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-            <Wallet className="w-5 h-5" />
+          <div className={`w-11 h-11 rounded-xl border flex items-center justify-center ${
+            netProfit >= 0 ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-rose-50 text-rose-600 border-rose-100'
+          }`}>
+            <Wallet className="w-5 h-5 stroke-[2]" />
           </div>
         </div>
       </div>
@@ -198,7 +202,8 @@ export default function FinancePage() {
       <div className="flex-1">
         {loading ? (
           <div className="animate-pulse space-y-4">
-            <div className="h-64 bg-gray-200 rounded"></div>
+            <div className="h-12 bg-slate-200/80 rounded-2xl w-1/4"></div>
+            <div className="h-72 bg-slate-200/80 rounded-2xl"></div>
           </div>
         ) : (
           <DataTable
@@ -217,105 +222,118 @@ export default function FinancePage() {
         onClose={() => setIsModalOpen(false)}
         title={selectedRecord ? 'Ubah Transaksi' : 'Tambah Transaksi Baru'}
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Tipe Arus Kas</label>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Tipe Arus Kas</label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setType('Income')}
-                className={`py-2 border rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors ${
-                  type === 'Income' ? 'bg-green-50 border-green-500 text-green-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                onClick={() => {
+                  setType('Income');
+                  setCategory('Sales');
+                }}
+                className={`py-2.5 border rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
+                  type === 'Income' 
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-700 shadow-inner' 
+                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <ArrowUpCircle className="w-4 h-4" /> Pemasukan
+                <ArrowUpCircle className="w-4 h-4" /> PEMASUKAN
               </button>
               <button
                 type="button"
-                onClick={() => setType('Expense')}
-                className={`py-2 border rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors ${
-                  type === 'Expense' ? 'bg-rose-50 border-rose-500 text-rose-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                onClick={() => {
+                  setType('Expense');
+                  setCategory('Office Supplies');
+                }}
+                className={`py-2.5 border rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
+                  type === 'Expense' 
+                    ? 'bg-rose-50 border-rose-300 text-rose-700 shadow-inner' 
+                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <ArrowDownCircle className="w-4 h-4" /> Pengeluaran
+                <ArrowDownCircle className="w-4 h-4" /> PENGELUARAN
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Jumlah (IDR)</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Jumlah (IDR)</label>
               <input
                 type="number"
                 min="0"
                 required
                 value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Tanggal</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Tanggal</label>
               <input
                 type="date"
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Kategori</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none bg-white focus:ring-2 focus:ring-blue-500"
-            >
-              {type === 'Income' ? (
-                <>
-                  <option value="Sales">Penjualan Produk</option>
-                  <option value="Services">Layanan Jasa</option>
-                  <option value="Investment">Investasi</option>
-                  <option value="Others">Lain-lain</option>
-                </>
-              ) : (
-                <>
-                  <option value="Office Supplies">Peralatan Kantor</option>
-                  <option value="Salary">Gaji Karyawan</option>
-                  <option value="Rent">Sewa Tempat</option>
-                  <option value="Marketing">Pemasaran</option>
-                  <option value="Procurement">Pengadaan Barang</option>
-                  <option value="Utilities">Air & Listrik</option>
-                </>
-              )}
-            </select>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Kategori</label>
+            <div className="relative">
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="appearance-none w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold cursor-pointer"
+              >
+                {type === 'Income' ? (
+                  <>
+                    <option value="Sales">Penjualan Produk</option>
+                    <option value="Services">Layanan Jasa</option>
+                    <option value="Investment">Investasi</option>
+                    <option value="Others">Lain-lain</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="Office Supplies">Peralatan Kantor</option>
+                    <option value="Salary">Gaji Karyawan</option>
+                    <option value="Rent">Sewa Tempat</option>
+                    <option value="Marketing">Pemasaran</option>
+                    <option value="Procurement">Pengadaan Barang</option>
+                    <option value="Utilities">Air & Listrik</option>
+                  </>
+                )}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Deskripsi</label>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Deskripsi</label>
             <textarea
               required
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Berikan deskripsi singkat transaksi..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold resize-none"
             />
           </div>
 
-          <div className="pt-4 flex justify-end gap-3 border-t border-gray-100">
+          <div className="pt-5 flex justify-end gap-3 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 border border-gray-300 hover:bg-gray-100 text-gray-700 text-sm font-medium rounded-lg"
+              className="px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold rounded-xl transition-all cursor-pointer uppercase tracking-wider"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg"
+              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-[0_4px_12px_rgba(79,70,229,0.15)] hover:shadow-[0_6px_16px_rgba(79,70,229,0.25)] hover:-translate-y-0.5 transition-all cursor-pointer uppercase tracking-wider"
             >
               Simpan
             </button>

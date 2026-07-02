@@ -49,9 +49,31 @@ Untuk menghindari kegagalan out-of-memory pada environment build yang terbatas, 
 - `build:gas`: Menyusun backend Google Apps Script dengan menggabungkan multi-file `gas-src/*.gs` ke dalam `dist-gas/code.gs` dan menyalin `setup.gs` (sangat ringan, cepat, tanpa proses Vite).
 - `build` / `build:all`: Menjalankan proses build penuh secara berurutan (`build:html` diikuti oleh `build:gas`).
 
-### 5. Font & Warna
-- **Font**: Inter (Google Fonts CDN)
-- **Warna Utama**: Tailwind Default Scale (Gray-900 untuk sidebar, Blue-600 untuk primary buttons, Gray-50 untuk background).
+### 5. Font & Warna (SaaS ERP Redesign System)
+- **Font Stack**: 
+  - **Display / Headings**: *Plus Jakarta Sans* (Loaded from Google Fonts Google CDN) untuk nuansa modern, tech-forward, dan premium.
+  - **Body Text**: *Inter* (Loaded from Google Fonts CDN) untuk keterbacaan tinggi di berbagai resolusi layar.
+  - **Monospace / Code / Data**: *JetBrains Mono* (Loaded from Google Fonts CDN) untuk angka-angka finansial, format status, dan data tabel.
+- **Palet Warna Premium (Aivox Redesign System)**:
+  - **Sidebar Navigation**: Berwarna dasar putih murni (`bg-white`) dengan batas kanan yang solid (`border-slate-300`) dan bayangan lembut bento-style (`shadow-[8px_0_40px_rgba(0,0,0,0.015)]`). Dilengkapi logo lencana hitam solid (`bg-slate-950`) dengan inisial display miring *A* dan pendaran lampu status. Menu navigasi dikelompokkan ke dalam kategori terstruktur (*MAIN MENU*, *OPERATIONS*, *PREFERENCES*) dengan menu aktif berbentuk kapsul hitam pekat solid (`bg-slate-950`) berpendar putih, serta menu tidak aktif bertekstur hover abu-abu terang.
+  - **Ikon Panel Buka/Tutup Kustom**: Untuk menjaga kemurnian tata letak sidebar, ikon buka/tutup dinonaktifkan dari kepala logo sidebar dan **ditempatkan secara eksklusif di Topbar di sebelah Judul Dashboard**. Tombol ini menggunakan desain bingkai persegi bulat bersisian garis pembagi vertikal dengan indikator chevron penunjuk arah dinamis (kiri saat terbuka, kanan saat tertutup) untuk kontrol visual yang elegan.
+  - **Background Dasar Utama**: Warna background dasar luar disetel ke warna slate abu-abu muda (`bg-slate-100`) dengan area main content disetel ke `bg-slate-100/50`. Modifikasi ini memberikan kontras visual yang luar biasa, membuat setiap kartu bento putih murni (`bg-white`) seolah mengambang indah di layar.
+  - **Interactive Accent**: *Indigo 600* sebagai warna aksi utama dan tombol penting, dipadukan dengan focus ring *Indigo 100*.
+  - **Status Success & Lunas**: *Emerald 50/700* dengan border *Emerald 100* untuk indikasi transaksi lunas atau barang tersedia.
+  - **Status Cancel / Alert**: *Rose 50/700* dengan border *Rose 100* untuk transaksi dibatalkan atau pengeluaran kritis.
+  - **Dashboard & Bento Cards**: *White* (`#ffffff`) dengan pembatas solid abu-abu yang lebih kuat dan tebal (`border-slate-300`) dan bayangan lembut bento-style (`shadow-[0_8px_30px_rgb(0,0,0,0.012)]`) guna menghadirkan estetika premium yang kokoh, tegas, dan presisi tinggi.
+
+### 5b. Fungsionalitas Lanjutan & Redesain Pengaturan (Settings)
+1. **Interactive Notification Bell Hub**:
+   - Ikon Bell topbar difungsikan sepenuhnya sebagai pusat kontrol notifikasi dengan indikator gelembung unread dinamis.
+   - Dilengkapi menu dropdown pop-up bento-style yang interaktif, menampilkan log aktivitas sistem real-time (seperti transaksi lunas, konektivitas database, status stok rendah).
+   - Menyediakan fitur "Tandai Semua Dibaca" untuk mereset unread count dan "Hapus Semua" untuk membersihkan riwayat.
+   - Perekaman log via `logSystem` secara otomatis didorong ke dalam feed notifikasi untuk menjaga data tetap segar secara real-time.
+
+2. **Redesain Halaman Settings Bento-Style**:
+   - **Profil Perusahaan**: Didesain ulang menjadi tata letak bento grid 3-kolom. Sisi kiri menyajikan formulir detail organisasi, mata uang acuan, format pajak, dan prefix penomoran dokumen otomatis. Sisi kanan menyajikan widget real-time Pemantau Status Sistem (Server engine Google Apps Script V8, metrik latency, pemakaian kuota panggilan API harian, dan tautan konsol internal).
+   - **Tab Baru - Integrasi Google Sheets**: Menyediakan modul khusus untuk memeriksa detail database Spreadsheet yang terhubung. Menampilkan visualisasi skema dari 6 tabel utama (`tb_users`, `tb_inventory`, `tb_finance`, `tb_employees`, `tb_procurement`, `tb_sales`), tipe kolom, dan jumlah baris data. Dilengkapi tombol interaktif "Uji Koneksi" (dengan simulasi pemrosesan asinkron & feedback sukses) serta tombol "Sinkronisasi Skema" yang meregenerasi meta-tabel secara instan.
+   - **Manajemen User**: DataTable yang elegan dengan kontrol registrasi pengguna baru, pengeditan hak akses, dan role-based access control (Admin, Manager, Staff, Viewer) berbasis modal dialog yang sangat detail.
 
 ### 6. Optimasi Transisi Halaman & Manajemen Caching Ringan
 Aplikasi ini dikonfigurasi untuk menangani batasan koneksi asinkron Google Apps Script (`google.script.run`) melalui pendekatan frontend terarah:

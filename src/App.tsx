@@ -6,12 +6,20 @@ import {
   DollarSign, 
   Users, 
   ShoppingCart, 
+  ShoppingBag,
   Truck, 
   FileText, 
   Settings as SettingsIcon, 
   Menu, 
   Bell, 
-  User as UserIcon 
+  User as UserIcon,
+  Check,
+  Trash2,
+  X,
+  Inbox,
+  AlertTriangle,
+  CheckCircle,
+  Info
 } from 'lucide-react';
 
 import { callGas } from './api/gasClient';
@@ -32,6 +40,15 @@ interface User {
   email: string;
 }
 
+interface ERPNotification {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  type: 'info' | 'success' | 'warning' | 'error';
+}
+
 export default function App() {
   const [activeMenu, setActiveMenu] = useState('Dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -40,6 +57,41 @@ export default function App() {
 
   // Notifications state
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState<ERPNotification[]>([
+    {
+      id: '1',
+      title: 'Koneksi Sukses',
+      message: 'Sistem berhasil terhubung dengan database Google Sheets!',
+      time: 'Baru saja',
+      read: false,
+      type: 'success'
+    },
+    {
+      id: '2',
+      title: 'Peringatan Stok',
+      message: 'Persediaan barang Kertas HVS A4 tersisa 5 rim (di bawah limit minimum).',
+      time: '10 mnt lalu',
+      read: false,
+      type: 'warning'
+    },
+    {
+      id: '3',
+      title: 'Invoice Lunas',
+      message: 'Penerimaan dana transaksi INV-2026-004 sebesar Rp 14.500.000 terverifikasi.',
+      time: '1 jam lalu',
+      read: true,
+      type: 'success'
+    },
+    {
+      id: '4',
+      title: 'Persetujuan Pembelian',
+      message: 'Permintaan pengadaan PO-2026-001 membutuhkan approval dari Manager Keuangan.',
+      time: '2 jam lalu',
+      read: true,
+      type: 'info'
+    }
+  ]);
 
   // Add toast helper
   const showToast = (message: string, type: 'success' | 'warning' | 'error' | 'info' = 'success') => {
@@ -61,6 +113,17 @@ export default function App() {
     } else {
       console.log(output);
     }
+
+    // Auto-populate notification list for real functionality
+    const newNotif: ERPNotification = {
+      id: `${Date.now()}-${Math.random()}`,
+      title: severity === 'error' ? 'Masalah Sistem' : severity === 'warning' ? 'Peringatan' : 'Aktivitas Kerja',
+      message,
+      time: 'Baru saja',
+      read: false,
+      type: severity
+    };
+    setNotifications(prev => [newNotif, ...prev]);
   };
 
   const handleRemoveToast = (id: string) => {
@@ -84,15 +147,30 @@ export default function App() {
     fetchUser();
   }, []);
 
-  const menuItems = [
-    { id: 'Dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { id: 'Inventory', icon: Package, label: 'Persediaan (Inventory)' },
-    { id: 'Finance', icon: DollarSign, label: 'Keuangan (Finance)' },
-    { id: 'HR', icon: Users, label: 'Kepegawaian (HR)' },
-    { id: 'Procurement', icon: ShoppingCart, label: 'Pengadaan (Procurement)' },
-    { id: 'Sales', icon: Truck, label: 'Penjualan (Sales)' },
-    { id: 'Reporting', icon: FileText, label: 'Pelaporan (Reporting)' },
-    { id: 'Settings', icon: SettingsIcon, label: 'Pengaturan (Settings)' },
+  const menuGroups = [
+    {
+      title: 'MAIN MENU',
+      items: [
+        { id: 'Dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+        { id: 'Sales', icon: ShoppingBag, label: 'Penjualan (Sales)' },
+        { id: 'Finance', icon: DollarSign, label: 'Keuangan (Finance)' },
+      ]
+    },
+    {
+      title: 'OPERATIONS',
+      items: [
+        { id: 'Inventory', icon: Package, label: 'Persediaan (Inventory)' },
+        { id: 'Procurement', icon: ShoppingCart, label: 'Pengadaan (Procurement)' },
+        { id: 'HR', icon: Users, label: 'Kepegawaian (HR)' },
+      ]
+    },
+    {
+      title: 'PREFERENCES',
+      items: [
+        { id: 'Reporting', icon: FileText, label: 'Pelaporan (Reporting)' },
+        { id: 'Settings', icon: SettingsIcon, label: 'Pengaturan (Settings)' },
+      ]
+    }
   ];
 
   if (isLoading) {
@@ -128,53 +206,99 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 text-gray-900 font-sans select-none">
+    <div className="flex h-screen bg-slate-100 text-slate-800 font-sans select-none antialiased">
       {/* Sidebar */}
-      <aside className={`bg-gray-900 text-white transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'} flex flex-col z-20 shadow-lg`}>
-        <div className="h-16 flex items-center px-5 border-b border-gray-800 gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-black text-white text-base shadow-md shadow-blue-500/30">
-            E
-          </div>
-          {isSidebarOpen && (
-            <div className="leading-tight animate-in fade-in duration-300">
-              <h1 className="font-extrabold text-sm tracking-wide text-gray-100 uppercase">Enterprise ERP</h1>
-              <span className="text-[10px] text-gray-400 font-bold tracking-wider">WORKSPACE GAS</span>
+      <aside className={`bg-white text-slate-800 transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-[76px]'} flex flex-col h-full z-20 shadow-[8px_0_40px_rgba(0,0,0,0.015)] border-r border-slate-300`}>
+        {/* Logo/Header */}
+        {isSidebarOpen ? (
+          <div className="h-18 flex items-center px-5 border-b border-slate-300 gap-3">
+            <div className="flex items-center gap-3">
+              {/* Black Rounded App Icon */}
+              <div className="w-9 h-9 rounded-xl bg-slate-950 flex items-center justify-center text-white relative shadow-xs">
+                <span className="font-display font-black text-lg italic tracking-tighter">A</span>
+                <span className="absolute bottom-2 right-2 w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse"></span>
+              </div>
+              <div className="leading-tight animate-in fade-in duration-300">
+                <h1 className="font-bold text-sm tracking-tight text-slate-900 font-display">Aivox</h1>
+                <span className="text-[8px] text-indigo-600 font-extrabold tracking-widest uppercase block mt-0.5">APEX ERP</span>
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="h-18 flex items-center justify-center border-b border-slate-300">
+            <div
+              className="w-9 h-9 rounded-xl bg-slate-950 flex items-center justify-center text-white relative shadow-xs"
+              title="Aivox ERP"
+            >
+              <span className="font-display font-black text-lg italic tracking-tighter">A</span>
+            </div>
+          </div>
+        )}
         
-        <nav className="flex-1 py-4 overflow-y-auto space-y-1 px-3">
-          {menuItems.map(item => {
-            const isActive = activeMenu === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveMenu(item.id);
-                  logSystem(`Navigasi ke modul ${item.label}.`, 'info');
-                }}
-                className={`w-full flex items-center px-3.5 py-3 rounded-xl transition-all font-medium text-xs uppercase tracking-wide gap-3 ${
-                  isActive 
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/10' 
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800/60'
-                }`}
-              >
-                <item.icon className={`w-4.5 h-4.5 flex-shrink-0 ${isActive ? 'text-white' : 'text-gray-400'}`} />
-                <span className={`transition-all whitespace-nowrap ${!isSidebarOpen && 'hidden'}`}>{item.label}</span>
-              </button>
-            );
-          })}
+        {/* Navigation Items */}
+        <nav className="flex-1 py-4 overflow-y-auto px-3.5 space-y-4 custom-scrollbar">
+          {menuGroups.map((group, groupIdx) => (
+            <div key={group.title} className="space-y-1">
+              {/* Category Header */}
+              {isSidebarOpen ? (
+                <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest pl-3.5 mb-2 mt-2 font-display">
+                  {group.title}
+                </h3>
+              ) : (
+                groupIdx > 0 && <div className="h-px bg-slate-100 my-4 mx-2"></div>
+              )}
+              
+              {/* Items */}
+              <div className="space-y-0.5">
+                {group.items.map(item => {
+                  const isActive = activeMenu === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setActiveMenu(item.id);
+                        logSystem(`Navigasi ke modul ${item.label}.`, 'info');
+                      }}
+                      className={`w-full flex items-center px-3.5 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs tracking-wide gap-3 relative group cursor-pointer ${
+                        isActive 
+                          ? 'bg-slate-950 text-white shadow-[0_4px_12px_rgba(15,23,42,0.12)]' 
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`}
+                      title={!isSidebarOpen ? item.label : undefined}
+                    >
+                      <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-700'}`} />
+                      <span className={`transition-all whitespace-nowrap ${!isSidebarOpen ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+                        {item.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
         
-        <div className="p-4 border-t border-gray-800 bg-gray-950/40">
+        {/* User Info & Profile at Bottom */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 p-1.5 bg-gray-800 rounded-xl flex items-center justify-center text-gray-300 shadow-inner border border-gray-700/50">
-              <UserIcon className="w-5 h-5" />
+            <div className="relative">
+              <div className="w-9 h-9 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center justify-center shadow-xs uppercase font-display">
+                {user?.name ? user.name.slice(0, 2) : 'AD'}
+              </div>
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white shadow-xs animate-pulse"></span>
             </div>
-            <div className={`overflow-hidden leading-snug ${!isSidebarOpen && 'hidden'}`}>
-              <p className="text-xs font-bold truncate text-gray-200">{user?.name || 'Administrator'}</p>
-              <p className="text-[10px] text-gray-400 uppercase font-extrabold tracking-wider">{user?.role || 'admin'}</p>
-            </div>
+            
+            {isSidebarOpen && (
+              <div className="overflow-hidden leading-normal flex-1 min-w-0">
+                <p className="text-xs font-bold truncate text-slate-800 font-display">{user?.name || 'Administrator'}</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[8px] bg-slate-200/60 text-slate-600 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">
+                    {user?.role || 'admin'}
+                  </span>
+                  <span className="text-[9px] text-slate-400 font-bold">Enterprise</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </aside>
@@ -182,36 +306,155 @@ export default function App() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
-        <header className="h-16 bg-white border-b border-gray-150 flex items-center justify-between px-6 z-10 shadow-sm shadow-black/[0.01]">
-          <div className="flex items-center gap-4">
+        <header className="h-18 bg-white/80 backdrop-blur-md border-b border-slate-300 flex items-center justify-between px-8 z-10 shadow-xs">
+          <div className="flex items-center gap-5">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors bg-white cursor-pointer"
+              className="p-1.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition-all bg-white cursor-pointer hover:shadow-sm"
+              title={isSidebarOpen ? "Sembunyikan Sidebar" : "Tampilkan Sidebar"}
             >
-              <Menu className="w-4 h-4" />
+              {isSidebarOpen ? (
+                <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="4" />
+                  <path d="M9 3v18" />
+                  <path d="m15 15-3-3 3-3" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="4" />
+                  <path d="M9 3v18" />
+                  <path d="m13 9 3 3-3 3" />
+                </svg>
+              )}
             </button>
             <div>
-              <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest leading-none">Sistem ERP Enterprise</span>
-              <h2 className="text-base font-bold text-gray-800 leading-tight">{activeMenu}</h2>
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">Apex ERP Cloud</span>
+                <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                <span className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest leading-none">SaaS Pro</span>
+              </div>
+              <h2 className="text-base font-bold text-slate-900 leading-tight mt-0.5">{activeMenu}</h2>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-5">
             {/* Status Indicator */}
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-green-50 border border-green-150 rounded-full">
-              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-              <span className="text-[10px] text-green-700 font-bold uppercase tracking-wider">Koneksi Aktif</span>
+            <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 bg-emerald-50/70 border border-emerald-100 rounded-full">
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+              <span className="text-[9px] text-emerald-800 font-bold uppercase tracking-widest">Workspace Live</span>
             </div>
 
-            <button className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 relative transition-colors">
-              <Bell className="w-4.5 h-4.5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full shadow shadow-rose-500/30"></span>
-            </button>
+            {/* Notification Bell with interactive dropdown */}
+            <div className="relative">
+              <button 
+                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100/80 relative transition-colors cursor-pointer"
+                title="Notifikasi Sistem"
+              >
+                <Bell className="w-4.5 h-4.5" />
+                {notifications.filter(n => !n.read).length > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full border border-white shadow-xs animate-bounce"></span>
+                )}
+              </button>
+
+              {isNotificationOpen && (
+                <>
+                  {/* Backdrop to close */}
+                  <div className="fixed inset-0 z-30" onClick={() => setIsNotificationOpen(false)} />
+                  
+                  {/* Dropdown Card */}
+                  <div className="absolute right-0 mt-2.5 w-80 bg-white rounded-2xl border border-slate-300 shadow-[0_12px_40px_rgba(0,0,0,0.06)] py-3 z-40 animate-in fade-in slide-in-from-top-3 duration-200">
+                    <div className="flex items-center justify-between px-4 pb-2.5 border-b border-slate-100">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider font-display">Notifikasi</h4>
+                        {notifications.filter(n => !n.read).length > 0 && (
+                          <span className="px-1.5 py-0.5 bg-rose-50 text-rose-600 rounded-md text-[9px] font-extrabold">
+                            {notifications.filter(n => !n.read).length} Baru
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-2.5">
+                        {notifications.filter(n => !n.read).length > 0 && (
+                          <button 
+                            onClick={() => {
+                              setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+                              showToast('Semua notifikasi ditandai telah dibaca', 'info');
+                            }}
+                            className="text-[10px] text-indigo-600 hover:text-indigo-800 font-bold transition-colors cursor-pointer"
+                          >
+                            Baca Semua
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => {
+                            setNotifications([]);
+                            showToast('Daftar notifikasi dibersihkan', 'info');
+                          }}
+                          className="text-[10px] text-slate-400 hover:text-slate-600 font-bold transition-colors cursor-pointer"
+                        >
+                          Hapus Semua
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="max-h-64 overflow-y-auto divide-y divide-slate-50 custom-scrollbar">
+                      {notifications.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                          <Inbox className="w-8 h-8 text-slate-300 stroke-1 mb-2" />
+                          <p className="text-[11px] font-bold text-slate-500">Tidak ada notifikasi baru</p>
+                          <p className="text-[9px] text-slate-400 mt-0.5 font-semibold">Semua aktivitas sistem akan tampil di sini.</p>
+                        </div>
+                      ) : (
+                        notifications.map(n => (
+                          <div 
+                            key={n.id} 
+                            onClick={() => {
+                              setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, read: true } : item));
+                            }}
+                            className={`p-3 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3 relative group ${!n.read ? 'bg-indigo-50/10' : ''}`}
+                          >
+                            <div className="mt-0.5 flex-shrink-0">
+                              {n.type === 'success' && <CheckCircle className="w-4 h-4 text-emerald-500" />}
+                              {n.type === 'warning' && <AlertTriangle className="w-4 h-4 text-amber-500" />}
+                              {n.type === 'error' && <AlertTriangle className="w-4 h-4 text-rose-500" />}
+                              {n.type === 'info' && <Info className="w-4 h-4 text-indigo-500" />}
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <p className="text-xs font-bold text-slate-800 truncate font-display">{n.title}</p>
+                                <span className="text-[9px] text-slate-400 font-bold whitespace-nowrap">{n.time}</span>
+                              </div>
+                              <p className="text-[11px] text-slate-500 leading-normal mt-0.5 font-semibold break-words">{n.message}</p>
+                            </div>
+
+                            {!n.read && (
+                              <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full absolute right-3 top-4"></span>
+                            )}
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setNotifications(prev => prev.filter(item => item.id !== n.id));
+                              }}
+                              className="opacity-0 group-hover:opacity-100 absolute right-2 bottom-2 p-1 text-slate-300 hover:text-slate-500 hover:bg-slate-100 rounded-md transition-all animate-in fade-in duration-150"
+                              title="Hapus"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </header>
 
         {/* Dynamic Body Content */}
-        <main className="flex-1 p-6 overflow-auto bg-gray-50 select-text">
+        <main className="flex-1 p-8 overflow-auto bg-slate-100/50 select-text">
           {renderActivePage()}
         </main>
       </div>

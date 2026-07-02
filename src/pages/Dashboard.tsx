@@ -74,17 +74,17 @@ export default function DashboardPage() {
       value: `Rp ${(metrics?.totalRevenue || 0).toLocaleString('id-ID')}`,
       desc: '+12.5% dibanding bulan lalu',
       icon: DollarSign,
-      color: 'bg-green-500',
-      textColor: 'text-green-600',
+      iconBg: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+      trendColor: 'text-emerald-600 bg-emerald-50',
       trend: 'up'
     },
     {
       title: 'Pesanan Penjualan',
-      value: metrics?.totalOrders || 0,
+      value: `${(metrics?.totalOrders || 0).toLocaleString('id-ID')} SO`,
       desc: '32 transaksi aktif hari ini',
       icon: ShoppingCart,
-      color: 'bg-blue-500',
-      textColor: 'text-blue-600',
+      iconBg: 'bg-blue-50 text-blue-600 border border-blue-100',
+      trendColor: 'text-blue-600 bg-blue-50',
       trend: 'up'
     },
     {
@@ -92,8 +92,8 @@ export default function DashboardPage() {
       value: `${metrics?.activeUsers || 0} Orang`,
       desc: '100% kehadiran hari ini',
       icon: Users,
-      color: 'bg-indigo-500',
-      textColor: 'text-indigo-600',
+      iconBg: 'bg-indigo-50 text-indigo-600 border border-indigo-100',
+      trendColor: 'text-slate-500 bg-slate-100/80',
       trend: 'neutral'
     },
     {
@@ -101,31 +101,34 @@ export default function DashboardPage() {
       value: `${metrics?.lowStockItems || 0} Barang`,
       desc: 'Butuh reorder segera',
       icon: Package,
-      color: 'bg-amber-500',
-      textColor: 'text-amber-600',
+      iconBg: 'bg-amber-50 text-amber-600 border border-amber-100',
+      trendColor: 'text-amber-600 bg-amber-50',
       trend: 'down'
     }
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in duration-500">
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {kpis.map((kpi, idx) => (
-          <div key={idx} className="bg-white p-5 rounded-xl border border-gray-150 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
-            <div className="space-y-1.5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">{kpi.title}</span>
-              <p className="text-2xl font-bold text-gray-900">{kpi.value}</p>
-              <div className="flex items-center gap-1">
-                {kpi.trend === 'up' && <ArrowUpRight className="w-3.5 h-3.5 text-green-500" />}
-                {kpi.trend === 'down' && <ArrowDownRight className="w-3.5 h-3.5 text-red-500" />}
-                <span className={`text-[11px] font-medium ${kpi.trend === 'up' ? 'text-green-600' : kpi.trend === 'down' ? 'text-red-600' : 'text-gray-500'}`}>
+          <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{kpi.title}</span>
+              <p className="text-2xl font-bold tracking-tight text-slate-900 font-display">{kpi.value}</p>
+              <div className="flex items-center gap-1.5">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${kpi.trendColor}`}>
+                  {kpi.trend === 'up' && <ArrowUpRight className="w-3 h-3" />}
+                  {kpi.trend === 'down' && <ArrowDownRight className="w-3 h-3" />}
+                  {kpi.trend === 'up' ? 'UP' : kpi.trend === 'down' ? 'LOW' : 'STABLE'}
+                </span>
+                <span className="text-[11px] font-medium text-slate-500">
                   {kpi.desc}
                 </span>
               </div>
             </div>
-            <div className={`p-3 rounded-xl text-white ${kpi.color} bg-opacity-95 shadow-sm`}>
-              <kpi.icon className="w-5 h-5" />
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-xs ${kpi.iconBg}`}>
+              <kpi.icon className="w-5 h-5 stroke-[2]" />
             </div>
           </div>
         ))}
@@ -134,62 +137,66 @@ export default function DashboardPage() {
       {/* Analytics Visual Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Cashflow Chart (SVG-based for complete compatibility & zero loading delay) */}
-        <div className="bg-white p-6 rounded-xl border border-gray-150 shadow-sm lg:col-span-2 flex flex-col justify-between">
+        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] lg:col-span-2 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide">Tren Arus Kas (Semester 1)</h3>
-              <div className="flex items-center gap-3 text-xs">
-                <div className="flex items-center gap-1.5 font-medium">
-                  <span className="w-2.5 h-2.5 bg-blue-500 rounded-sm"></span>
-                  <span className="text-gray-600">Pemasukan</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider font-display">Tren Arus Kas (Semester 1)</h3>
+                <p className="text-[11px] text-slate-400 mt-0.5 font-medium">Laporan visual dinamika kas masuk dan keluar operasional</p>
+              </div>
+              <div className="flex items-center gap-4 text-[11px]">
+                <div className="flex items-center gap-2 font-semibold">
+                  <span className="w-2.5 h-2.5 bg-indigo-600 rounded-sm shadow-xs"></span>
+                  <span className="text-slate-600">Pemasukan</span>
                 </div>
-                <div className="flex items-center gap-1.5 font-medium">
-                  <span className="w-2.5 h-2.5 bg-rose-500 rounded-sm"></span>
-                  <span className="text-gray-600">Pengeluaran</span>
+                <div className="flex items-center gap-2 font-semibold">
+                  <span className="w-2.5 h-2.5 bg-rose-500 rounded-sm shadow-xs"></span>
+                  <span className="text-slate-600">Pengeluaran</span>
                 </div>
               </div>
             </div>
             
             {/* Beautiful SVG Chart */}
-            <div className="relative h-56 w-full pt-4">
-              <div className="absolute inset-0 flex flex-col justify-between text-[10px] text-gray-400 pb-8 select-none">
-                <div className="border-b border-gray-100 w-full pb-1">Rp 80jt</div>
-                <div className="border-b border-gray-100 w-full pb-1">Rp 60jt</div>
-                <div className="border-b border-gray-100 w-full pb-1">Rp 40jt</div>
-                <div className="border-b border-gray-100 w-full pb-1">Rp 20jt</div>
+            <div className="relative h-64 w-full pt-4">
+              {/* Grid Lines */}
+              <div className="absolute inset-0 flex flex-col justify-between text-[10px] text-slate-400 pb-10 select-none">
+                <div className="border-b border-slate-100/80 w-full pb-1 flex justify-between"><span>Rp 80jt</span></div>
+                <div className="border-b border-slate-100/80 w-full pb-1 flex justify-between"><span>Rp 60jt</span></div>
+                <div className="border-b border-slate-100/80 w-full pb-1 flex justify-between"><span>Rp 40jt</span></div>
+                <div className="border-b border-slate-100/80 w-full pb-1 flex justify-between"><span>Rp 20jt</span></div>
                 <div className="w-full pb-1">Rp 0</div>
               </div>
 
               {/* Chart bars & lines */}
-              <div className="absolute inset-x-12 bottom-8 top-2 flex items-end justify-between h-40">
+              <div className="absolute inset-x-12 bottom-10 top-2 flex items-end justify-between h-48">
                 {metrics?.cashflow.map((item, idx) => {
                   const maxVal = 80000000;
                   const incHeight = (item.income / maxVal) * 100;
                   const expHeight = (item.expense / maxVal) * 100;
 
                   return (
-                    <div key={idx} className="flex flex-col items-center gap-1 h-full justify-end flex-1 max-w-[50px]">
-                      <div className="flex items-end gap-1.5 h-full w-full justify-center">
+                    <div key={idx} className="flex flex-col items-center gap-1 h-full justify-end flex-1 max-w-[60px]">
+                      <div className="flex items-end gap-2 h-full w-full justify-center">
                         {/* Income Bar */}
                         <div 
                           style={{ height: `${incHeight}%` }} 
-                          className="w-3 bg-blue-500 hover:bg-blue-600 transition-all rounded-t-sm shadow-sm relative group cursor-pointer"
+                          className="w-3.5 bg-indigo-600 hover:bg-indigo-700 transition-all rounded-t-md shadow-sm relative group cursor-pointer"
                         >
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-gray-900 text-white text-[9px] py-1 px-1.5 rounded shadow-lg whitespace-nowrap z-20">
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block bg-slate-900 text-white text-[9px] font-bold py-1 px-2 rounded-lg shadow-md whitespace-nowrap z-20">
                             Rp {(item.income / 1000000).toFixed(1)}jt
                           </div>
                         </div>
                         {/* Expense Bar */}
                         <div 
                           style={{ height: `${expHeight}%` }} 
-                          className="w-3 bg-rose-500 hover:bg-rose-600 transition-all rounded-t-sm shadow-sm relative group cursor-pointer"
+                          className="w-3.5 bg-rose-500 hover:bg-rose-600 transition-all rounded-t-md shadow-sm relative group cursor-pointer"
                         >
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-gray-900 text-white text-[9px] py-1 px-1.5 rounded shadow-lg whitespace-nowrap z-20">
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block bg-slate-900 text-white text-[9px] font-bold py-1 px-2 rounded-lg shadow-md whitespace-nowrap z-20">
                             Rp {(item.expense / 1000000).toFixed(1)}jt
                           </div>
                         </div>
                       </div>
-                      <span className="text-[10px] text-gray-500 font-bold mt-1 select-none">{item.month}</span>
+                      <span className="text-[10px] text-slate-500 font-bold mt-2 select-none">{item.month}</span>
                     </div>
                   );
                 })}
@@ -199,29 +206,29 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Activities Section */}
-        <div className="bg-white p-6 rounded-xl border border-gray-150 shadow-sm flex flex-col justify-between">
+        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-4">Aktivitas Sistem Terbaru</h3>
-            <div className="space-y-4">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider font-display mb-6">Aktivitas Sistem Terbaru</h3>
+            <div className="space-y-5">
               {metrics?.recentActivities.map((act) => (
-                <div key={act.id} className="flex gap-3 text-xs leading-relaxed">
-                  <span className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${
-                    act.severity === 'success' ? 'bg-green-500' : act.severity === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
+                <div key={act.id} className="flex gap-3 text-xs leading-relaxed items-start">
+                  <span className={`w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0 border-2 border-white shadow-xs ${
+                    act.severity === 'success' ? 'bg-emerald-500' : act.severity === 'warning' ? 'bg-amber-500' : 'bg-indigo-500'
                   }`} />
                   <div className="flex-1 space-y-0.5">
-                    <p className="text-gray-800 font-medium">{act.message}</p>
+                    <p className="text-slate-700 font-semibold">{act.message}</p>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-gray-400 font-bold uppercase">{act.type}</span>
-                      <span className="text-gray-300">•</span>
-                      <span className="text-[10px] text-gray-400 font-semibold">{act.time}</span>
+                      <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wide bg-slate-100 px-1.5 py-0.5 rounded-md">{act.type}</span>
+                      <span className="text-slate-300">•</span>
+                      <span className="text-[10px] text-slate-400 font-semibold">{act.time}</span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          <div className="pt-4 border-t border-gray-100 text-center">
-            <button className="text-[11px] font-bold text-blue-600 hover:text-blue-700 hover:underline">
+          <div className="pt-5 border-t border-slate-100 text-center">
+            <button className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-all cursor-pointer">
               Lihat Seluruh Riwayat Log
             </button>
           </div>

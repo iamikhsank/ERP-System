@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { callGas, getGasCache } from '../api/gasClient';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
-import { Edit2, Trash2, Users, Briefcase, Award } from 'lucide-react';
+import { Edit2, Trash2, Users, Briefcase, Award, ChevronDown } from 'lucide-react';
 
 interface Employee {
   id: string;
@@ -117,10 +117,10 @@ export default function HRPage() {
     { 
       header: 'Status', 
       accessor: (row: Employee) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-          row.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+          row.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-slate-100 text-slate-500 border border-slate-200'
         }`}>
-          {row.status === 'Active' ? 'Aktif' : 'Non-Aktif'}
+          {row.status === 'Active' ? 'AKTIF' : 'NON-AKTIF'}
         </span>
       ),
       sortKey: 'status' as keyof Employee 
@@ -131,15 +131,17 @@ export default function HRPage() {
         <div className="flex items-center gap-2">
           <button 
             onClick={(e) => handleEditClick(row, e)}
-            className="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
+            className="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-100 transition-all cursor-pointer"
+            title="Edit"
           >
-            <Edit2 className="w-4 h-4" />
+            <Edit2 className="w-3.5 h-3.5" />
           </button>
           <button 
             onClick={(e) => handleDeleteClick(row.id, e)}
-            className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded transition-colors"
+            className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 rounded-xl border border-rose-150/40 transition-all cursor-pointer"
+            title="Hapus"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
       )
@@ -147,38 +149,38 @@ export default function HRPage() {
   ];
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
+    <div className="space-y-6 h-full flex flex-col animate-in fade-in duration-300">
       {/* Visual KPI Widgets */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-white p-5 rounded-xl border border-gray-150 shadow-sm flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total Karyawan</span>
-            <p className="text-xl font-bold text-gray-900">{employees.length} Orang</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Karyawan</span>
+            <p className="text-xl font-bold text-slate-900 font-display">{employees.length} Orang</p>
           </div>
-          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
-            <Users className="w-5 h-5" />
+          <div className="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 flex items-center justify-center">
+            <Users className="w-5 h-5 stroke-[2]" />
           </div>
         </div>
-        <div className="bg-white p-5 rounded-xl border border-gray-150 shadow-sm flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Karyawan Aktif</span>
-            <p className="text-xl font-bold text-green-600">
+        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Karyawan Aktif</span>
+            <p className="text-xl font-bold text-emerald-600 font-display">
               {employees.filter(e => e.status === 'Active').length} Karyawan
             </p>
           </div>
-          <div className="p-3 bg-green-50 text-green-600 rounded-xl">
-            <Briefcase className="w-5 h-5" />
+          <div className="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 flex items-center justify-center">
+            <Briefcase className="w-5 h-5 stroke-[2]" />
           </div>
         </div>
-        <div className="bg-white p-5 rounded-xl border border-gray-150 shadow-sm flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total Pengeluaran Gaji</span>
-            <p className="text-xl font-bold text-blue-600">
+        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Pengeluaran Gaji</span>
+            <p className="text-xl font-bold text-blue-600 font-display">
               Rp {employees.reduce((sum, e) => sum + Number(e.salary || 0), 0).toLocaleString('id-ID')}
             </p>
           </div>
-          <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-            <Award className="w-5 h-5" />
+          <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 flex items-center justify-center">
+            <Award className="w-5 h-5 stroke-[2]" />
           </div>
         </div>
       </div>
@@ -186,7 +188,8 @@ export default function HRPage() {
       <div className="flex-1">
         {loading ? (
           <div className="animate-pulse space-y-4">
-            <div className="h-64 bg-gray-200 rounded"></div>
+            <div className="h-12 bg-slate-200/80 rounded-2xl w-1/4"></div>
+            <div className="h-72 bg-slate-200/80 rounded-2xl"></div>
           </div>
         ) : (
           <DataTable
@@ -205,82 +208,88 @@ export default function HRPage() {
         onClose={() => setIsModalOpen(false)}
         title={selectedEmployee ? 'Ubah Informasi Karyawan' : 'Daftarkan Karyawan Baru'}
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Nama Lengkap</label>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nama Lengkap</label>
             <input
               type="text"
               required
               value={employeeName}
               onChange={(e) => setEmployeeName(e.target.value)}
               placeholder="Contoh: Budi Santoso"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Email Karyawan</label>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Email Karyawan</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Contoh: budi@perusahaan.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Jabatan / Posisi</label>
-              <select
-                value={position}
-                onChange={(e) => setPosition(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none bg-white focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="Staff IT">Staff IT</option>
-                <option value="Manager Operasional">Manager Operasional</option>
-                <option value="HR Generalist">HR Generalist</option>
-                <option value="Staff Finance">Staff Finance</option>
-                <option value="Sales Executive">Sales Executive</option>
-              </select>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Jabatan / Posisi</label>
+              <div className="relative">
+                <select
+                  value={position}
+                  onChange={(e) => setPosition(e.target.value)}
+                  className="appearance-none w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold cursor-pointer"
+                >
+                  <option value="Staff IT">Staff IT</option>
+                  <option value="Manager Operasional">Manager Operasional</option>
+                  <option value="HR Generalist">HR Generalist</option>
+                  <option value="Staff Finance">Staff Finance</option>
+                  <option value="Sales Executive">Sales Executive</option>
+                </select>
+                <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Gaji Bulanan (IDR)</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Gaji Bulanan (IDR)</label>
               <input
                 type="number"
                 min="0"
                 required
                 value={salary}
                 onChange={(e) => setSalary(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Status Keaktifan</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as 'Active' | 'Inactive')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none bg-white focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="Active">Aktif</option>
-              <option value="Inactive">Non-Aktif</option>
-            </select>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Status Keaktifan</label>
+            <div className="relative">
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as 'Active' | 'Inactive')}
+                className="appearance-none w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold cursor-pointer"
+              >
+                <option value="Active">Aktif</option>
+                <option value="Inactive">Non-Aktif</option>
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
           </div>
 
-          <div className="pt-4 flex justify-end gap-3 border-t border-gray-100">
+          <div className="pt-5 flex justify-end gap-3 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 border border-gray-300 hover:bg-gray-100 text-gray-700 text-sm font-medium rounded-lg"
+              className="px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold rounded-xl transition-all cursor-pointer uppercase tracking-wider"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg"
+              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-[0_4px_12px_rgba(79,70,229,0.15)] hover:shadow-[0_6px_16px_rgba(79,70,229,0.25)] hover:-translate-y-0.5 transition-all cursor-pointer uppercase tracking-wider"
             >
               Simpan
             </button>

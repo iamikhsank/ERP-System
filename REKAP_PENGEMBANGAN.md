@@ -1,3 +1,64 @@
+## 2026-07-02 — v0.8.1
+
+### Ditambahkan / Diubah (Penggelapan Batas Border - High Contrast Slate)
+- **Peningkatan Kontras Batas Container (Borders) Lebih Gelap**:
+  - Memperkuat semua pembatas visual kartu bento, panel fungsional, sidebar navigasi, topbar header, status monitor, database info, tabel skema, dan elemen masukan di seluruh modul aplikasi (Dashboard, Sales, Finance, HR, Procurement, Reporting, Settings, dan komponen global `DataTable`) dari `border-slate-200` menjadi solid `border-slate-300`.
+  - Memberikan kontras tingkat tinggi yang lebih terdefinisi, tegas, dan berpenampilan ultra-profesional di atas latar belakang abu-abu terang (`bg-slate-100`).
+
+---
+
+## 2026-07-02 — v0.8.0
+
+### Ditambahkan / Diubah (Pembaruan Warna, Notifikasi Bell, Redesain Settings, & Ikon Sidebar Kustom)
+- **Implementasi Ikon Panel Buka/Tutup Kustom**:
+  - Menyederhanakan kontrol navigasi dengan **menghilangkan tombol buka/tutup di sidebar**, menjaga estetika lencana logo tetap murni.
+  - Menempatkan **kontrol pemicu panel eksklusif di samping Judul Dashboard di baris Topbar** menggunakan visualisasi bingkai persegi bulat bersisian garis pembagi vertikal dengan penunjuk arah chevron dinamis (kiri saat sidebar terbuka, kanan saat sidebar tertutup).
+- **Penguatan Batas Container (Borders) Seluruh Halaman**:
+  - Memperkuat seluruh pembatas kartu bento, panel fungsional, dan tabel di seluruh halaman aplikasi (Dashboard, Sales, Finance, Inventory, Procurement, HR, Reporting, Settings, serta komponen global `DataTable`) dari warna transparan tipis (`border-slate-200/60`) menjadi solid `border-slate-200` yang kokoh, presisi, dan berkualitas tinggi di atas background dasar abu-abu muda (`bg-slate-100`).
+- **Background Utama Sedikit Lebih Gelap**:
+  - Mengubah warna background dasar pembungkus luar menjadi slate abu-abu muda (`bg-slate-100`) dan area main content menjadi `bg-slate-100/50`. Memberikan kontras tingkat tinggi yang membuat setiap bento-card putih murni (`bg-white`) terlihat melayang indah dan premium.
+- **Fungsionalitas Ikon Notifikasi Bell**:
+  - Menyematkan dropdown popover interaktif pada tombol Bell topbar dengan lencana unread dinamis.
+  - Menambahkan list notifikasi fungsional untuk aktivitas sistem (transaksi lunas, peringatan stok, koneksi database).
+  - Mengintegrasikan pemanggilan `logSystem` agar otomatis mendorong log aktivitas baru ke dalam feed notifikasi secara real-time.
+  - Menyediakan aksi interaktif "Tandai Semua Dibaca" dan "Hapus Semua" dengan toast feedback.
+- **Redesain & Perdetail Halaman Settings (Bento Grid)**:
+  - **Profil Perusahaan**: Dirombak menjadi layout bento grid 3-kolom. Di bagian kiri berisi form konfigurasi organisasi, alamat, acuan mata uang, PPN, dan format nomor dokumen otomatis. Di bagian kanan berisi panel visual pemantau real-time Status Sistem (V8 Engine, latency ~120ms, dan grafik progres kuota panggilan API harian).
+  - **Tab Baru - Integrasi Google Sheets**: Menyediakan tabel visualisasi skema dari 6 tabel Spreadsheet utama, tipe kolom, dan status sinkronisasi. Dilengkapi aksi interaktif "Uji Koneksi" dan "Sinkronisasi Skema" dengan spinner loading dan banner sukses.
+  - **Manajemen User**: DataTable pengguna yang lebih rapi dilengkapi registrasi hak akses pengguna berbasis modal dialog yang detail.
+
+---
+
+## 2026-07-02 — v0.7.0
+
+### Ditambahkan / Diubah (Redesain Navigasi Premium Ala Aivox)
+- **Desain Sidebar Premium Light-Themed**:
+  - Mengubah warna dasar navigasi samping dari warna gelap menjadi warna putih bersih (`bg-white`) dengan border kanan yang sangat halus (`border-slate-200/70`) guna menghadirkan tampilan premium modern.
+  - Menghadirkan logo badge hitam melengkung elegan (`bg-slate-950`) dengan inisial font display miring *A* dan animasi pendaran cahaya (*pulse*).
+- **Pengelompokan Navigasi Terstruktur (Grouped Navigation)**:
+  - Menyusun menu navigasi ke dalam grup fungsional yang intuitif: *MAIN MENU* (Dashboard, Penjualan, Keuangan), *OPERATIONS* (Persediaan, Pengadaan, Kepegawaian), dan *PREFERENCES* (Pelaporan, Pengaturan).
+  - Menggunakan label yang elegan dan ikon-ikon yang disesuaikan (misalnya mengganti ikon truk dengan `ShoppingBag` untuk modul Sales agar selaras dengan estetika SaaS modern).
+- **Tombol Toggle Collapse Internal Terintegrasi**:
+  - Menyematkan tombol kolaps sidebar bergaya layout dual-kolom di samping logo "Aivox" untuk meminimalkan sidebar secara anggun. Saat kolaps, header menyusut otomatis menjadi ikon inisial hitam yang interaktif.
+- **Transisi dan Efek Hover yang Elegan**:
+  - Tombol menu aktif kini menggunakan kapsul berwarna gelap solid (`bg-slate-950`) dengan teks putih cerah dan bayangan bento yang lembut. Menu tidak aktif menggunakan warna slate yang halus dengan efek hover berlatar belakang abu-abu terang.
+
+---
+
+## 2026-07-02 — v0.6.0
+
+### Ditambahkan / Diubah (Redesain Antarmuka Premium ERP SaaS)
+- **Sistem Tipografi Plus Jakarta Sans**:
+  - Mengintegrasikan CDN Google Fonts untuk memuat *Plus Jakarta Sans* (Display & Headings), *Inter* (Body Text), dan *JetBrains Mono* (Monospace untuk angka & data visual).
+- **Estetika High-Contrast Modern SaaS**:
+  - **Sidebar Navigation**: Mengubah panel navigasi menjadi warna Slate 900 gelap yang elegan, dilengkapi tombol aktif berwarna gradien Indigo 600 ke Indigo 700 dengan hover state interaktif dan sudut melingkar penuh (*fully-rounded active capsules*).
+  - **KPI & Bento Grid**: Mengubah widget metrik statis di Dashboard, Inventory, Finance, HR, Sales, dan Procurement menjadi kartu bento-style dengan batas tipis Slate 200/60 dan bayangan bayang-halus (`shadow-[0_8px_30px_rgb(0,0,0,0.012)]`).
+  - **Kapsul Status & Tindakan Baru**: Merancang ulang seluruh label status (Lunas, Proses, Sukses, Batal) menjadi kapsul tag semitransparan yang indah (seperti Emerald, Blue, Rose, dan Slate) dengan ikon mini Lucide penjelas status.
+  - **Form Input & Modal Premium**: Memperbarui semua isian form, select menu, date picker, dan teks area menggunakan background halus `slate-50/50`, efek hover interaktif, serta ring fokus berwarna ungu lembut (*Indigo 100*) untuk kemudahan entri data.
+  - **Simulasi & Loader Real-Time Baru**: Mengganti dialog browser native `alert` pada modul Cetak Laporan (Reporting) dan Profil Perusahaan dengan banner notifikasi inline dan pemuat animatif (*spinning loader*) yang jauh lebih profesional dan aman untuk iframe sandboxed.
+
+---
+
 ## 2026-07-02 — v0.5.3
 
 ### Ditambahkan / Diperbaiki
