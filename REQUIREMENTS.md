@@ -6,7 +6,8 @@
 | React | 19.0.1 | https://esm.sh/react@19.0.1 | Core UI | Ringan, cepat dimuat, versi selaras lokal |
 | React-DOM | 19.0.1 | https://esm.sh/react-dom@19.0.1 | Core Render | Rendering UI via ESM Import Maps |
 | Lucide React | 0.460.0 | https://esm.sh/lucide-react@0.460.0?external=react,react-dom | Iconography | Di-load dari CDN asinkron anti dual-react |
-| Motion (Framer) | 12.23.24 | https://esm.sh/motion@12.23.24?external=react,react-dom | Animasi UI | Animasi transisi modular terisolasi |
+| Recharts | 2.12.7 | https://esm.sh/recharts@2.12.7?external=react,react-dom | Data Charts | Visualisasi data analitis via CDN |
+| XLSX | 0.18.5 | https://esm.sh/xlsx@0.18.5 | Sheet Export | Manajemen ekspor data ke Excel |
 | Tailwind CSS | 4.1.14 | (Bundled Inline) | Styling | Utility-first styling terkompilasi |
 | Vite SingleFile | 2.3.3 | (Dev Dependency) | Build Tool | Output mandiri single-file HTML |
 
@@ -18,10 +19,11 @@
     "react": "https://esm.sh/react@19.0.1",
     "react-dom": "https://esm.sh/react-dom@19.0.1",
     "react-dom/client": "https://esm.sh/react-dom@19.0.1/client",
+    "react/jsx-runtime": "https://esm.sh/react@19.0.1/jsx-runtime",
+    "react/jsx-dev-runtime": "https://esm.sh/react@19.0.1/jsx-runtime",
     "lucide-react": "https://esm.sh/lucide-react@0.460.0?external=react,react-dom",
-    "motion": "https://esm.sh/motion@12.23.24?external=react,react-dom",
-    "motion/react": "https://esm.sh/motion@12.23.24?external=react,react-dom",
-    "lucide": "https://esm.sh/lucide@0.460.0"
+    "recharts": "https://esm.sh/recharts@2.12.7?external=react,react-dom",
+    "xlsx": "https://esm.sh/xlsx@0.18.5"
   }
 }
 </script>

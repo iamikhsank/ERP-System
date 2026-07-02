@@ -24,7 +24,7 @@
 - Memperbaiki penulisan tipe data parameter `key` opsional di komponen `ToastItem` guna meloloskan pemeriksaan TypeScript linter.
 - Memperbarui skrip `"build"` di `package.json` agar otomatis menjalankan kompilasi backend modular `build-gas.mjs` serta membatasi alokasi memori Node.js maksimal 2 GB (`--max-old-space-size=2048`) demi stabilitas proses build.
 - **Perbaikan Bug Key React**: Menghindari masalah tabrakan key (`Encountered two children with the same key`) di `Toast` dan `ErrorConsole` dengan mengganti metode pembuatan ID unik menggunakan gabungan nilai `Date.now()` dan string acak berbasis base-36. Hal serupa juga diterapkan pada pendaftaran pengguna baru di halaman `Settings`.
-- **Perbaikan Dual React Instance**: Memperbaiki kegagalan layar putih kosong (blank screen) dengan mengonfigurasi `importmap` CDN `esm.sh` menggunakan parameter `?external=react,react-dom` pada modul pendukung (seperti `lucide-react` dan `motion`) agar semuanya merujuk pada instance React tunggal yang sama.
+- **Perbaikan Dual React Instance & Penyesuaian Konfigurasi Vite**: Memperbaiki kegagalan layar putih kosong (blank screen) dengan menyelaraskan konfigurasi `vite.config.ts` dan `index.html`. Mengonfigurasi `rollupOptions.external` untuk mengisolasi `react`, `react-dom`, `recharts`, `lucide-react`, dan `xlsx`, serta memetakan `react/jsx-runtime` dan dependensi lainnya ke CDN `esm.sh` menggunakan parameter `?external=react,react-dom` agar semuanya menggunakan instance React tunggal yang konsisten.
 
 ### Catatan Teknis
 - Seluruh linter pemeriksaan `tsc --noEmit` dan build produksi `npm run build` dinyatakan **100% Lulus (Green/Sukses)**.
