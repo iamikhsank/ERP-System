@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { callGas, getGasCache } from '../api/gasClient';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
-import { CheckCircle2, XCircle, Clock, ShoppingCart, PlusCircle, AlertCircle } from 'lucide-react';
+import VendorDirectory from '../components/VendorDirectory';
+import { CheckCircle2, XCircle, Clock, ShoppingCart, PlusCircle, AlertCircle, ShoppingBag, BookOpen } from 'lucide-react';
 
 interface ProcurementRequest {
   id: string;
@@ -15,12 +16,19 @@ interface ProcurementRequest {
   createdAt: string;
 }
 
-export default function ProcurementPage() {
+interface ProcurementPageProps {
+  activeTab?: 'requisitions' | 'vendors';
+  setActiveTab?: (tab: 'requisitions' | 'vendors') => void;
+}
+
+export default function ProcurementPage({ activeTab: propActiveTab, setActiveTab: propSetActiveTab }: ProcurementPageProps = {}) {
   const cached = getGasCache('Procurement', 'get');
   const [requests, setRequests] = useState<ProcurementRequest[]>(cached || []);
   const [loading, setLoading] = useState(!cached);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<ProcurementRequest | null>(null);
+  const [localActiveTab, setLocalActiveTab] = useState<'requisitions' | 'vendors'>('requisitions');
+  const activeTab = propActiveTab || localActiveTab;
+  const setActiveTab = propSetActiveTab || setLocalActiveTab;
 
   // Form states
   const [item, setItem] = useState('');
@@ -48,7 +56,6 @@ export default function ProcurementPage() {
   }, []);
 
   const handleAddClick = () => {
-    setSelectedRequest(null);
     setItem('');
     setQuantity(1);
     setEstimatedCost(100000);
@@ -57,7 +64,7 @@ export default function ProcurementPage() {
 
   const handleApprove = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm('Setujui permintaan pengadaan ini?')) {
+    if (window.confirm('Setujui permintaan pengadaan ini? Sisa stok barang yang sesuai di gudang akan bertambah secara otomatis dan biaya pengeluaran akan dicatat dalam Buku Kas.')) {
       try {
         await callGas('Procurement', 'approve', { id });
         fetchProcurement();
@@ -98,12 +105,30 @@ export default function ProcurementPage() {
   };
 
   const columns = [
-    { header: 'No Pengadaan', accessor: 'requestNo' as keyof ProcurementRequest, sortKey: 'requestNo' as keyof ProcurementRequest },
-    { header: 'Nama Barang', accessor: 'item' as keyof ProcurementRequest, sortKey: 'item' as keyof ProcurementRequest },
-    { header: 'Jumlah', accessor: 'quantity' as keyof ProcurementRequest, sortKey: 'quantity' as keyof ProcurementRequest },
+    { 
+      header: 'No Pengadaan', 
+      accessor: (row: ProcurementRequest) => <span className="font-mono font-bold text-slate-800">{row.requestNo}</span>, 
+      sortKey: 'requestNo' as keyof ProcurementRequest 
+    },
+    { 
+      header: 'Nama Barang / Kategori', 
+      accessor: (row: ProcurementRequest) => (
+        <span className="font-bold text-slate-800">{row.item}</span>
+      ), 
+      sortKey: 'item' as keyof ProcurementRequest 
+    },
+    { 
+      header: 'Jumlah', 
+      accessor: (row: ProcurementRequest) => <span className="font-bold text-slate-600">{row.quantity} unit</span>, 
+      sortKey: 'quantity' as keyof ProcurementRequest 
+    },
     { 
       header: 'Perkiraan Biaya', 
-      accessor: (row: ProcurementRequest) => `Rp ${Number(row.estimatedCost || 0).toLocaleString('id-ID')}`,
+      accessor: (row: ProcurementRequest) => (
+        <span className="font-semibold text-slate-600 font-display text-xs">
+          Rp {Number(row.estimatedCost || 0).toLocaleString('id-ID')}
+        </span>
+      ),
       sortKey: 'estimatedCost' as keyof ProcurementRequest 
     },
     { 
@@ -125,19 +150,19 @@ export default function ProcurementPage() {
       header: 'Aksi Persetujuan', 
       accessor: (row: ProcurementRequest) => {
         if (row.status !== 'Pending') {
-          return <span className="text-xs text-slate-400 font-bold bg-slate-100 px-2 py-1 rounded-lg uppercase tracking-wider text-[10px]">SELESAI</span>;
+          return <span className="text-xs text-slate-400 font-bold bg-slate-100 px-2.5 py-1 rounded-lg uppercase tracking-wider text-[9px]">Selesai</span>;
         }
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button 
               onClick={(e) => handleApprove(row.id, e)}
-              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-bold transition-all shadow-xs hover:shadow-md cursor-pointer uppercase tracking-wider"
+              className="px-2.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[10px] font-bold transition-all shadow-xs cursor-pointer uppercase tracking-wider"
             >
               Setujui
             </button>
             <button 
               onClick={(e) => handleReject(row.id, e)}
-              className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-[10px] font-bold transition-all shadow-xs hover:shadow-md cursor-pointer uppercase tracking-wider"
+              className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-150/50 rounded-lg text-[10px] font-bold transition-all cursor-pointer uppercase tracking-wider"
             >
               Tolak
             </button>
@@ -149,58 +174,92 @@ export default function ProcurementPage() {
 
   return (
     <div className="space-y-6 h-full flex flex-col animate-in fade-in duration-300">
-      {/* Visual Status Widgets */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pengadaan Pending</span>
-            <p className="text-xl font-bold text-amber-600 font-display">
-              {requests.filter(r => r.status === 'Pending').length} Pengajuan
-            </p>
-          </div>
-          <div className="w-11 h-11 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 flex items-center justify-center">
-            <Clock className="w-5 h-5 stroke-[2]" />
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Pengadaan Disetujui</span>
-            <p className="text-xl font-bold text-emerald-600 font-display">
-              {requests.filter(r => r.status === 'Approved').length} Selesai
-            </p>
-          </div>
-          <div className="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 flex items-center justify-center">
-            <CheckCircle2 className="w-5 h-5 stroke-[2]" />
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Pengeluaran Pengadaan</span>
-            <p className="text-xl font-bold text-blue-600 font-display">
-              Rp {requests.filter(r => r.status === 'Approved').reduce((sum, r) => sum + Number(r.estimatedCost * r.quantity || 0), 0).toLocaleString('id-ID')}
-            </p>
-          </div>
-          <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 flex items-center justify-center">
-            <ShoppingCart className="w-5 h-5 stroke-[2]" />
-          </div>
-        </div>
+      {/* Tab Navigation Menu */}
+      <div className="flex border-b border-slate-300 bg-white rounded-2xl px-2 shadow-xs">
+        <button
+          onClick={() => setActiveTab('requisitions')}
+          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'requisitions'
+              ? 'border-slate-950 text-slate-950 font-black'
+              : 'border-transparent text-slate-400 hover:text-slate-600 font-bold'
+          }`}
+        >
+          <ShoppingBag className="w-4 h-4" />
+          Pengajuan Pembelian (Requisitions)
+        </button>
+        <button
+          onClick={() => setActiveTab('vendors')}
+          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'vendors'
+              ? 'border-slate-950 text-slate-950 font-black'
+              : 'border-transparent text-slate-400 hover:text-slate-600 font-bold'
+          }`}
+        >
+          <BookOpen className="w-4 h-4" />
+          Direktori Vendor / Supplier
+        </button>
       </div>
 
       <div className="flex-1">
-        {loading ? (
-          <div className="animate-pulse space-y-4">
-            <div className="h-12 bg-slate-200/80 rounded-2xl w-1/4"></div>
-            <div className="h-72 bg-slate-200/80 rounded-2xl"></div>
+        {activeTab === 'requisitions' ? (
+          <div className="space-y-6 flex flex-col h-full animate-in fade-in duration-300">
+            {/* Visual Status Widgets */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pengadaan Pending</span>
+                  <p className="text-xl font-bold text-amber-600 font-display">
+                    {requests.filter(r => r.status === 'Pending').length} Pengajuan
+                  </p>
+                </div>
+                <div className="w-11 h-11 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 flex items-center justify-center">
+                  <Clock className="w-5 h-5 stroke-[2]" />
+                </div>
+              </div>
+              <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Pengadaan Disetujui</span>
+                  <p className="text-xl font-bold text-emerald-600 font-display">
+                    {requests.filter(r => r.status === 'Approved').length} Selesai
+                  </p>
+                </div>
+                <div className="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5 stroke-[2]" />
+                </div>
+              </div>
+              <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Pengeluaran Pengadaan</span>
+                  <p className="text-xl font-bold text-blue-600 font-display">
+                    Rp {requests.filter(r => r.status === 'Approved').reduce((sum, r) => sum + Number(r.estimatedCost * r.quantity || 0), 0).toLocaleString('id-ID')}
+                  </p>
+                </div>
+                <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 flex items-center justify-center">
+                  <ShoppingCart className="w-5 h-5 stroke-[2]" />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1">
+              {loading ? (
+                <div className="animate-pulse space-y-4">
+                  <div className="h-12 bg-slate-200/80 rounded-2xl w-1/4"></div>
+                  <div className="h-72 bg-slate-200/80 rounded-2xl"></div>
+                </div>
+              ) : (
+                <DataTable
+                  columns={columns}
+                  data={requests}
+                  searchKey="item"
+                  searchPlaceholder="Cari nama barang pengadaan..."
+                  onAddClick={handleAddClick}
+                  addLabel="Ajukan Pengadaan"
+                />
+              )}
+            </div>
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={requests}
-            searchKey="item"
-            searchPlaceholder="Cari nama barang pengadaan..."
-            onAddClick={handleAddClick}
-            addLabel="Ajukan Pengadaan"
-          />
+          <VendorDirectory />
         )}
       </div>
 
@@ -217,7 +276,7 @@ export default function ProcurementPage() {
               required
               value={item}
               onChange={(e) => setItem(e.target.value)}
-              placeholder="Contoh: Kursi Ergonomis Kantor"
+              placeholder="Contoh: Kursi Ergonomis Kantor atau SKU Barang Inventaris..."
               className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold"
             />
           </div>

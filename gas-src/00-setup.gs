@@ -5,11 +5,17 @@ function runSetup() {
   
   const requiredSheets = [
     { name: 'Users', headers: ['id', 'email', 'role', 'name', 'createdAt'] },
-    { name: 'Inventory', headers: ['id', 'sku', 'name', 'quantity', 'warehouse', 'minStock', 'createdAt', 'updatedAt'] },
-    { name: 'Finance', headers: ['id', 'type', 'amount', 'date', 'description', 'category', 'createdAt'] },
-    { name: 'HR', headers: ['id', 'employeeName', 'position', 'status', 'email', 'salary', 'createdAt'] },
+    { name: 'Inventory', headers: ['id', 'sku', 'name', 'quantity', 'purchasePrice', 'sellingPrice', 'warehouse', 'minStock', 'createdAt', 'updatedAt'] },
+    { name: 'StockMutations', headers: ['id', 'sku', 'name', 'type', 'quantity', 'prevQty', 'newQty', 'description', 'createdAt'] },
+    { name: 'Finance', headers: ['id', 'type', 'amount', 'date', 'description', 'category', 'createdAt', 'reconciled', 'bankRef'] },
+    { name: 'HR', headers: ['id', 'employeeName', 'position', 'department', 'status', 'email', 'salary', 'joinDate', 'createdAt'] },
+    { name: 'Attendance', headers: ['id', 'employeeName', 'date', 'status', 'checkIn', 'checkOut', 'notes', 'createdAt'] },
+    { name: 'LeaveRequests', headers: ['id', 'employeeName', 'startDate', 'endDate', 'reason', 'status', 'createdAt'] },
+    { name: 'Payroll', headers: ['id', 'employeeName', 'month', 'basicSalary', 'allowance', 'deduction', 'netSalary', 'status', 'createdAt'] },
     { name: 'Procurement', headers: ['id', 'requestNo', 'item', 'quantity', 'status', 'estimatedCost', 'createdAt'] },
     { name: 'Sales', headers: ['id', 'orderNo', 'customer', 'total', 'status', 'createdAt'] },
+    { name: 'Customers', headers: ['id', 'name', 'contact', 'email', 'loyaltyPoints', 'receivable', 'createdAt'] },
+    { name: 'Suppliers', headers: ['id', 'name', 'contact', 'email', 'deliveryPerformance', 'catalog', 'createdAt'] },
     { name: 'Settings', headers: ['key', 'value'] }
   ];
 

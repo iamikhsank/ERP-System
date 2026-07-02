@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { callGas, getGasCache } from '../api/gasClient';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
-import { Edit2, Trash2, ArrowUpCircle, ArrowDownCircle, Wallet, ChevronDown } from 'lucide-react';
+import FinanceAnalysis from '../components/FinanceAnalysis';
+import FinanceReconciliation from '../components/FinanceReconciliation';
+import { Edit2, Trash2, ArrowUpCircle, ArrowDownCircle, Wallet, ChevronDown, BookOpen, BarChart2, CheckSquare } from 'lucide-react';
 
 interface FinanceRecord {
   id: string;
@@ -12,14 +14,24 @@ interface FinanceRecord {
   date: string;
   description: string;
   category: string;
+  reconciled?: boolean | string;
+  bankRef?: string;
 }
 
-export default function FinancePage() {
+interface FinancePageProps {
+  activeTab?: 'ledger' | 'pandl' | 'reconcile';
+  setActiveTab?: (tab: 'ledger' | 'pandl' | 'reconcile') => void;
+}
+
+export default function FinancePage({ activeTab: propActiveTab, setActiveTab: propSetActiveTab }: FinancePageProps = {}) {
   const cached = getGasCache('Finance', 'get');
   const [records, setRecords] = useState<FinanceRecord[]>(cached || []);
   const [loading, setLoading] = useState(!cached);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<FinanceRecord | null>(null);
+  const [localActiveTab, setLocalActiveTab] = useState<'ledger' | 'pandl' | 'reconcile'>('ledger');
+  const activeTab = propActiveTab || localActiveTab;
+  const setActiveTab = propSetActiveTab || setLocalActiveTab;
 
   // Form states
   const [type, setType] = useState<'Income' | 'Expense'>('Income');
@@ -199,21 +211,64 @@ export default function FinancePage() {
         </div>
       </div>
 
+      {/* Tab Navigation Switcher */}
+      <div className="flex border-b border-slate-300 bg-white rounded-2xl px-2 shadow-xs">
+        <button
+          onClick={() => setActiveTab('ledger')}
+          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'ledger'
+              ? 'border-slate-950 text-slate-950 font-black'
+              : 'border-transparent text-slate-400 hover:text-slate-600 font-bold'
+          }`}
+        >
+          <BookOpen className="w-4 h-4" />
+          Buku Besar Kas
+        </button>
+        <button
+          onClick={() => setActiveTab('pandl')}
+          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'pandl'
+              ? 'border-slate-950 text-slate-950 font-black'
+              : 'border-transparent text-slate-400 hover:text-slate-600 font-bold'
+          }`}
+        >
+          <BarChart2 className="w-4 h-4" />
+          Analisis Laba Rugi
+        </button>
+        <button
+          onClick={() => setActiveTab('reconcile')}
+          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'reconcile'
+              ? 'border-slate-950 text-slate-950 font-black'
+              : 'border-transparent text-slate-400 hover:text-slate-600 font-bold'
+          }`}
+        >
+          <CheckSquare className="w-4 h-4" />
+          Rekonsiliasi Kas & Bank
+        </button>
+      </div>
+
       <div className="flex-1">
-        {loading ? (
-          <div className="animate-pulse space-y-4">
-            <div className="h-12 bg-slate-200/80 rounded-2xl w-1/4"></div>
-            <div className="h-72 bg-slate-200/80 rounded-2xl"></div>
-          </div>
+        {activeTab === 'ledger' ? (
+          loading ? (
+            <div className="animate-pulse space-y-4">
+              <div className="h-12 bg-slate-200/80 rounded-2xl w-1/4"></div>
+              <div className="h-72 bg-slate-200/80 rounded-2xl"></div>
+            </div>
+          ) : (
+            <DataTable
+              columns={columns}
+              data={records}
+              searchKey="description"
+              searchPlaceholder="Cari deskripsi transaksi..."
+              onAddClick={handleAddClick}
+              addLabel="Tambah Transaksi"
+            />
+          )
+        ) : activeTab === 'pandl' ? (
+          <FinanceAnalysis records={records} />
         ) : (
-          <DataTable
-            columns={columns}
-            data={records}
-            searchKey="description"
-            searchPlaceholder="Cari deskripsi transaksi..."
-            onAddClick={handleAddClick}
-            addLabel="Tambah Transaksi"
-          />
+          <FinanceReconciliation records={records} onRefresh={fetchFinance} />
         )}
       </div>
 

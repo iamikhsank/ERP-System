@@ -1,6 +1,7 @@
 // modules/15-sales.gs
 function handleSalesApi(action, payload) {
   try {
+    // Sales Orders actions
     if (action === 'get') {
       return successResponse(getSheetDataAsObjects('Sales'));
     }
@@ -40,6 +41,36 @@ function handleSalesApi(action, payload) {
       
       return successResponse(res);
     }
+
+    // Customers (CRM) actions
+    if (action === 'getCustomers') {
+      return successResponse(getSheetDataAsObjects('Customers'));
+    }
+    if (action === 'createCustomer') {
+      const res = insertRow('Customers', {
+        name: payload.name,
+        contact: payload.contact,
+        email: payload.email,
+        loyaltyPoints: payload.loyaltyPoints || 0,
+        receivable: payload.receivable || 0
+      });
+      return successResponse(res);
+    }
+    if (action === 'updateCustomer') {
+      const res = updateRow('Customers', payload.id, {
+        name: payload.name,
+        contact: payload.contact,
+        email: payload.email,
+        loyaltyPoints: payload.loyaltyPoints,
+        receivable: payload.receivable
+      });
+      return successResponse(res);
+    }
+    if (action === 'deleteCustomer') {
+      const res = deleteRow('Customers', payload.id);
+      return successResponse(res);
+    }
+
     return errorResponse('Action not found: ' + action);
   } catch (err) {
     return errorResponse(err.message);

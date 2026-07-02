@@ -3,30 +3,44 @@ import React, { useState, useEffect } from 'react';
 import { callGas, getGasCache } from '../api/gasClient';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
-import { Edit2, Trash2, Users, Briefcase, Award, ChevronDown } from 'lucide-react';
+import PayrollProcessing from '../components/PayrollProcessing';
+import AttendanceAndLeave from '../components/AttendanceAndLeave';
+import { Edit2, Trash2, Users, Briefcase, Award, ChevronDown, UserCheck, CreditCard, CalendarRange, PlusCircle, Calendar } from 'lucide-react';
 
 interface Employee {
   id: string;
   employeeName: string;
   position: string;
+  department: string;
   status: 'Active' | 'Inactive';
   email: string;
   salary: number;
+  joinDate: string;
 }
 
-export default function HRPage() {
+interface HRPageProps {
+  activeTab?: 'directory' | 'payroll' | 'attendance';
+  setActiveTab?: (tab: 'directory' | 'payroll' | 'attendance') => void;
+}
+
+export default function HRPage({ activeTab: propActiveTab, setActiveTab: propSetActiveTab }: HRPageProps = {}) {
   const cached = getGasCache('HR', 'get');
   const [employees, setEmployees] = useState<Employee[]>(cached || []);
   const [loading, setLoading] = useState(!cached);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [localActiveTab, setLocalActiveTab] = useState<'directory' | 'payroll' | 'attendance'>('directory');
+  const activeTab = propActiveTab || localActiveTab;
+  const setActiveTab = propSetActiveTab || setLocalActiveTab;
 
   // Form states
   const [employeeName, setEmployeeName] = useState('');
   const [position, setPosition] = useState('Staff IT');
+  const [department, setDepartment] = useState('IT & Engineering');
   const [status, setStatus] = useState<'Active' | 'Inactive'>('Active');
   const [email, setEmail] = useState('');
   const [salary, setSalary] = useState(5000000);
+  const [joinDate, setJoinDate] = useState(new Date().toISOString().split('T')[0]);
 
   const fetchEmployees = async (active = true) => {
     if (!cached && active) setLoading(true);
@@ -52,9 +66,11 @@ export default function HRPage() {
     setSelectedEmployee(null);
     setEmployeeName('');
     setPosition('Staff IT');
+    setDepartment('IT & Engineering');
     setStatus('Active');
     setEmail('');
     setSalary(5000000);
+    setJoinDate(new Date().toISOString().split('T')[0]);
     setIsModalOpen(true);
   };
 
@@ -63,15 +79,17 @@ export default function HRPage() {
     setSelectedEmployee(emp);
     setEmployeeName(emp.employeeName);
     setPosition(emp.position);
+    setDepartment(emp.department || 'IT & Engineering');
     setStatus(emp.status);
     setEmail(emp.email || '');
     setSalary(emp.salary || 5000000);
+    setJoinDate(emp.joinDate || new Date().toISOString().split('T')[0]);
     setIsModalOpen(true);
   };
 
   const handleDeleteClick = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm('Hapus karyawan ini?')) {
+    if (window.confirm('Hapus karyawan ini? Semua log absensi, cuti, dan payroll akan tetap tersimpan di Sheets.')) {
       try {
         await callGas('HR', 'delete', { id });
         fetchEmployees();
@@ -86,9 +104,11 @@ export default function HRPage() {
     const payload = {
       employeeName,
       position,
+      department,
       status,
       email,
       salary,
+      joinDate,
       id: selectedEmployee?.id
     };
 
@@ -106,18 +126,40 @@ export default function HRPage() {
   };
 
   const columns = [
-    { header: 'Nama Karyawan', accessor: 'employeeName' as keyof Employee, sortKey: 'employeeName' as keyof Employee },
-    { header: 'Jabatan', accessor: 'position' as keyof Employee, sortKey: 'position' as keyof Employee },
+    { 
+      header: 'Nama Karyawan', 
+      accessor: (row: Employee) => (
+        <div className="py-1">
+          <p className="font-bold text-slate-800">{row.employeeName}</p>
+          <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Mulai Join: {row.joinDate || '-'}</p>
+        </div>
+      ), 
+      sortKey: 'employeeName' as keyof Employee 
+    },
+    { 
+      header: 'Jabatan & Dep', 
+      accessor: (row: Employee) => (
+        <div className="text-xs">
+          <p className="font-semibold text-slate-700">{row.position}</p>
+          <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">{row.department || 'Operasional'}</p>
+        </div>
+      ), 
+      sortKey: 'position' as keyof Employee 
+    },
     { header: 'Email', accessor: 'email' as keyof Employee },
     { 
       header: 'Gaji Bulanan', 
-      accessor: (row: Employee) => `Rp ${Number(row.salary || 0).toLocaleString('id-ID')}`,
+      accessor: (row: Employee) => (
+        <span className="font-semibold text-slate-600 font-display text-xs">
+          Rp {Number(row.salary || 0).toLocaleString('id-ID')}
+        </span>
+      ),
       sortKey: 'salary' as keyof Employee 
     },
     { 
       header: 'Status', 
       accessor: (row: Employee) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold ${
           row.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-slate-100 text-slate-500 border border-slate-200'
         }`}>
           {row.status === 'Active' ? 'AKTIF' : 'NON-AKTIF'}
@@ -131,15 +173,15 @@ export default function HRPage() {
         <div className="flex items-center gap-2">
           <button 
             onClick={(e) => handleEditClick(row, e)}
-            className="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-100 transition-all cursor-pointer"
-            title="Edit"
+            className="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-800 rounded-xl border border-slate-200 transition-all cursor-pointer"
+            title="Edit Karyawan"
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>
           <button 
             onClick={(e) => handleDeleteClick(row.id, e)}
             className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 rounded-xl border border-rose-150/40 transition-all cursor-pointer"
-            title="Hapus"
+            title="Hapus Karyawan"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -150,59 +192,107 @@ export default function HRPage() {
 
   return (
     <div className="space-y-6 h-full flex flex-col animate-in fade-in duration-300">
-      {/* Visual KPI Widgets */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Karyawan</span>
-            <p className="text-xl font-bold text-slate-900 font-display">{employees.length} Orang</p>
-          </div>
-          <div className="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 flex items-center justify-center">
-            <Users className="w-5 h-5 stroke-[2]" />
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Karyawan Aktif</span>
-            <p className="text-xl font-bold text-emerald-600 font-display">
-              {employees.filter(e => e.status === 'Active').length} Karyawan
-            </p>
-          </div>
-          <div className="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 flex items-center justify-center">
-            <Briefcase className="w-5 h-5 stroke-[2]" />
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Pengeluaran Gaji</span>
-            <p className="text-xl font-bold text-blue-600 font-display">
-              Rp {employees.reduce((sum, e) => sum + Number(e.salary || 0), 0).toLocaleString('id-ID')}
-            </p>
-          </div>
-          <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 flex items-center justify-center">
-            <Award className="w-5 h-5 stroke-[2]" />
-          </div>
-        </div>
+      {/* Tab Navigation Menu */}
+      <div className="flex border-b border-slate-300 bg-white rounded-2xl px-2 shadow-xs">
+        <button
+          onClick={() => setActiveTab('directory')}
+          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'directory'
+              ? 'border-slate-950 text-slate-950 font-black'
+              : 'border-transparent text-slate-400 hover:text-slate-600 font-bold'
+          }`}
+        >
+          <UserCheck className="w-4 h-4" />
+          Direktori Karyawan
+        </button>
+        <button
+          onClick={() => setActiveTab('payroll')}
+          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'payroll'
+              ? 'border-slate-950 text-slate-950 font-black'
+              : 'border-transparent text-slate-400 hover:text-slate-600 font-bold'
+          }`}
+        >
+          <CreditCard className="w-4 h-4" />
+          Slip Gaji (Payroll)
+        </button>
+        <button
+          onClick={() => setActiveTab('attendance')}
+          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'attendance'
+              ? 'border-slate-950 text-slate-950 font-black'
+              : 'border-transparent text-slate-400 hover:text-slate-600 font-bold'
+          }`}
+        >
+          <CalendarRange className="w-4 h-4" />
+          Kehadiran & Cuti
+        </button>
       </div>
 
       <div className="flex-1">
-        {loading ? (
-          <div className="animate-pulse space-y-4">
-            <div className="h-12 bg-slate-200/80 rounded-2xl w-1/4"></div>
-            <div className="h-72 bg-slate-200/80 rounded-2xl"></div>
+        {activeTab === 'directory' ? (
+          <div className="space-y-6 flex flex-col h-full animate-in fade-in duration-300">
+            {/* Visual KPI Widgets */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Terdaftar</span>
+                  <p className="text-xl font-bold text-slate-900 font-display">{employees.length} Orang</p>
+                </div>
+                <div className="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 flex items-center justify-center">
+                  <Users className="w-5 h-5 stroke-[2]" />
+                </div>
+              </div>
+              <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Staf Aktif</span>
+                  <p className="text-xl font-bold text-emerald-600 font-display">
+                    {employees.filter(e => e.status === 'Active').length} Karyawan
+                  </p>
+                </div>
+                <div className="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 stroke-[2]" />
+                </div>
+              </div>
+              <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Pengeluaran Gaji Pokok</span>
+                  <p className="text-xl font-bold text-blue-600 font-display">
+                    Rp {employees.filter(e => e.status === 'Active').reduce((sum, e) => sum + Number(e.salary || 0), 0).toLocaleString('id-ID')}
+                  </p>
+                </div>
+                <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 flex items-center justify-center">
+                  <Award className="w-5 h-5 stroke-[2]" />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1">
+              {loading ? (
+                <div className="animate-pulse space-y-4">
+                  <div className="h-12 bg-slate-200/80 rounded-2xl w-1/4"></div>
+                  <div className="h-72 bg-slate-200/80 rounded-2xl"></div>
+                </div>
+              ) : (
+                <DataTable
+                  columns={columns}
+                  data={employees}
+                  searchKey="employeeName"
+                  searchPlaceholder="Cari nama karyawan..."
+                  onAddClick={handleAddClick}
+                  addLabel="Tambah Karyawan"
+                />
+              )}
+            </div>
           </div>
+        ) : activeTab === 'payroll' ? (
+          <PayrollProcessing employees={employees.filter(e => e.status === 'Active')} />
         ) : (
-          <DataTable
-            columns={columns}
-            data={employees}
-            searchKey="employeeName"
-            searchPlaceholder="Cari nama karyawan..."
-            onAddClick={handleAddClick}
-            addLabel="Tambah Karyawan"
-          />
+          <AttendanceAndLeave employees={employees.filter(e => e.status === 'Active')} />
         )}
       </div>
 
+      {/* Modal Add/Edit Employee */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -221,38 +311,64 @@ export default function HRPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Email Karyawan</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Contoh: budi@perusahaan.com"
-              className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Email Karyawan</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Contoh: budi@perusahaan.com"
+                className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Tanggal Mulai Bergabung</label>
+              <input
+                type="date"
+                required
+                value={joinDate}
+                onChange={(e) => setJoinDate(e.target.value)}
+                className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Jabatan / Posisi</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Departemen</label>
               <div className="relative">
                 <select
-                  value={position}
-                  onChange={(e) => setPosition(e.target.value)}
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
                   className="appearance-none w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold cursor-pointer"
                 >
-                  <option value="Staff IT">Staff IT</option>
-                  <option value="Manager Operasional">Manager Operasional</option>
-                  <option value="HR Generalist">HR Generalist</option>
-                  <option value="Staff Finance">Staff Finance</option>
-                  <option value="Sales Executive">Sales Executive</option>
+                  <option value="IT & Engineering">IT & Engineering</option>
+                  <option value="Operasional">Operasional</option>
+                  <option value="Finance & Accounting">Finance & Accounting</option>
+                  <option value="Sales & Marketing">Sales & Marketing</option>
+                  <option value="HR & Admin">HR & Admin</option>
                 </select>
                 <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Gaji Bulanan (IDR)</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Jabatan / Posisi</label>
+              <input
+                type="text"
+                required
+                value={position}
+                onChange={(e) => setPosition(e.target.value)}
+                placeholder="Contoh: Lead Developer, Staff IT, HR Specialist..."
+                className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Gaji Bulanan Pokok (IDR)</label>
               <input
                 type="number"
                 min="0"
@@ -262,20 +378,19 @@ export default function HRPage() {
                 className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold"
               />
             </div>
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Status Keaktifan</label>
-            <div className="relative">
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as 'Active' | 'Inactive')}
-                className="appearance-none w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold cursor-pointer"
-              >
-                <option value="Active">Aktif</option>
-                <option value="Inactive">Non-Aktif</option>
-              </select>
-              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Status Keaktifan</label>
+              <div className="relative">
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as 'Active' | 'Inactive')}
+                  className="appearance-none w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 font-semibold cursor-pointer"
+                >
+                  <option value="Active">Aktif</option>
+                  <option value="Inactive">Non-Aktif</option>
+                </select>
+                <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
             </div>
           </div>
 
@@ -289,9 +404,10 @@ export default function HRPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-[0_4px_12px_rgba(79,70,229,0.15)] hover:shadow-[0_6px_16px_rgba(79,70,229,0.25)] hover:-translate-y-0.5 transition-all cursor-pointer uppercase tracking-wider"
+              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-[0_4px_12px_rgba(79,70,229,0.15)] hover:shadow-[0_6px_16px_rgba(79,70,229,0.25)] hover:-translate-y-0.5 transition-all cursor-pointer uppercase tracking-wider flex items-center gap-2"
             >
-              Simpan
+              <PlusCircle className="w-4 h-4 stroke-[2]" />
+              Simpan Karyawan
             </button>
           </div>
         </form>

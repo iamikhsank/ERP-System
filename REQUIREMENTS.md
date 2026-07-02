@@ -75,6 +75,75 @@ Untuk menghindari kegagalan out-of-memory pada environment build yang terbatas, 
    - **Tab Baru - Integrasi Google Sheets**: Menyediakan modul khusus untuk memeriksa detail database Spreadsheet yang terhubung. Menampilkan visualisasi skema dari 6 tabel utama (`tb_users`, `tb_inventory`, `tb_finance`, `tb_employees`, `tb_procurement`, `tb_sales`), tipe kolom, dan jumlah baris data. Dilengkapi tombol interaktif "Uji Koneksi" (dengan simulasi pemrosesan asinkron & feedback sukses) serta tombol "Sinkronisasi Skema" yang meregenerasi meta-tabel secara instan.
    - **Manajemen User**: DataTable yang elegan dengan kontrol registrasi pengguna baru, pengeditan hak akses, dan role-based access control (Admin, Manager, Staff, Viewer) berbasis modal dialog yang sangat detail.
 
+### 5c. Arsitektur Sub-Halaman Modul Keuangan (Finance Sub-Pages)
+Untuk menyajikan fungsionalitas ERP tingkat enterprise yang kaya namun tetap terstruktur dan bersih, Modul Keuangan dipecah menjadi 3 sub-halaman berbasis Tab:
+1. **Tab 1: Buku Besar Kas (General Ledger)**:
+   - Menampilkan total Pemasukan, total Pengeluaran, dan Laba Bersih yang terakumulasi secara dinamis dari database.
+   - Menyediakan tabel pencatatan transaksi manual lengkap dengan fitur pencarian deskripsi, filter, serta penambahan/pengubahan transaksi melalui modal dialog yang terintegrasi secara asinkron dengan Google Sheets.
+2. **Tab 2: Analisis Laba Rugi (P&L Summary)**:
+   - Visualisasi grafis interaktif buatan sendiri menggunakan SVG Donut Chart reaktif dengan efek sorot (*hover*) yang mulus.
+   - Pilihan kategori filter dinamis: Pengeluaran (*Expense*) vs Pendapatan (*Income*).
+   - Menghitung persentase kontribusi alokasi keuangan per kategori (Sales, Services, Utilities, Rent, dsb.) secara presisi disertai bilah progress bar berwarna-warni yang elegan.
+3. **Tab 3: Rekonsiliasi Kas & Bank**:
+   - Workspace komparasi audit internal untuk mencocokkan saldo kas Buku Besar dengan saldo laporan rekening koran bank.
+   - **Asisten Pencocokan Otomatis (*Auto-Reconcile*)**: Algoritma memindai transaksi Buku Besar yang belum direkonsiliasi dan mencocokkannya secara instan dengan baris mutasi bank yang sesuai berdasarkan nominal dan tipe transaksi (Credit vs Debit). Transaksi yang cocok otomatis diberi tanda centang hijau dan referensi bank di Google Sheets via pemanggilan GAS.
+   - **Pencatatan Cepat Selisih**: Menyediakan opsi bagi pengguna untuk merekam transaksi bank eksternal yang terlewat (seperti biaya administrasi bank bulanan atau bunga tabungan) secara langsung dari daftar mutasi bank ke Buku Besar internal dengan sekali klik.
+
+### 5d. Arsitektur Sub-Halaman Modul Penjualan (Sales Sub-Pages)
+Untuk menyajikan fungsionalitas ERP tingkat enterprise yang kaya namun tetap terstruktur dan bersih, Modul Penjualan dipecah menjadi 3 sub-halaman berbasis Tab:
+1. **Tab 1: Pesanan & Faktur (Sales Orders)**:
+   - Daftar transaksi penjualan lengkap dengan status pembayaran, nilai transaksi, nomor faktur otomatis (`SO-001`, dsb.), dan tindakan penyetelan status (Lunas atau Batalkan).
+   - Dilengkapi modal pembuatan pesanan baru yang secara dinamis terhubung asinkron dengan database Google Sheets dan otomatis mencatat buku kas masuk di sheet Keuangan saat pesanan dilunasi.
+2. **Tab 2: Database Pelanggan (CRM)**:
+   - Sistem manajemen profil pelanggan terintegrasi dengan Google Sheets menggunakan tabel baru `Customers`.
+   - Menampilkan detail kontak telepon, email, serta perhitungan akumulatif otomatis: sisa piutang dagang aktif (dari transaksi berjalan yang belum lunas) dan akumulasi poin loyalitas pelanggan (setiap kelipatan pembelian tertentu).
+3. **Tab 3: Performa Produk**:
+   - Analisis performa omset kontribusi produk riil yang dinamis (menghubungkan data penjualan dengan data inventaris SKU).
+   - Menghitung unit terjual, rasio SKU aktif, sisa stok gudang, penentuan kinerja otomatis (*Best Seller*, *Moderate*, *Slow Moving*), serta menyajikan grafik Bar Horizontal SVG interaktif yang reaktif.
+
+### 5e. Arsitektur Sub-Halaman Modul Inventaris & Gudang (Inventory Sub-Pages)
+Untuk memberikan fleksibilitas pelacakan barang tingkat tinggi, Modul Inventaris dipecah menjadi 3 sub-halaman berbasis Tab:
+1. **Tab 1: Stok Barang Aktual (Stock List)**:
+   - Dashboard sisa stok lengkap dengan status tingkat stok (Aman atau Kritis berdasarkan ambang minimum stock reaktif), HPP (Harga Pokok Penjualan), serta Harga Jual.
+   - Dilengkapi indikator KPI total macam SKU, unit minim, dan kalkulasi otomatis Estimasi Nilai Aset riil berdasarkan HPP * Stok.
+2. **Tab 2: Riwayat Mutasi (Stock Ledger)**:
+   - Log audit kronologis yang melacak semua gerakan barang di gudang (`Initial` pendaftaran, `In` barang masuk, `Out` barang keluar, dan `Adjustment` hasil opname).
+   - Menunjukkan penelusuran pergeseran kuantitas dari stok sebelum mutasi hingga stok sesudah mutasi secara transparan.
+3. **Tab 3: Opname Fisik (Stock Adjustment)**:
+   - Modul khusus proses stock opname periodik untuk menyesuaikan selisih persediaan antara sistem komputer dan kondisi riil di rak gudang fisik.
+   - Dilengkapi perhitungan reaktif (Surplus, Defisit, Netral) yang menghitung selisih unit secara visual sebelum disubmit, serta validasi alasan wajib penyesuaian stok.
+
+### 5f. Arsitektur Sub-Halaman Modul Pengadaan (Procurement Sub-Pages)
+Untuk mengelola rantai pasokan dan logistik dengan efisiensi tinggi, Modul Pengadaan dipecah menjadi 2 sub-halaman berbasis Tab:
+1. **Tab 1: Pengajuan Pembelian (Requisitions)**:
+   - Alur pengajuan dan persetujuan pembelian barang inventaris atau perlengkapan operasional.
+   - Status terperinci (*Pending*, *Approved*, *Rejected*) disertai dengan asisten kalkulasi otomatis total biaya pembelian.
+   - Integrasi asinkron: Persetujuan pengadaan otomatis mencatat pengeluaran di Buku Kas Keuangan, serta mengoreksi sisa stok reaktif dan mencatat log mutasi masuk di modul Inventaris jika produk terdaftar di SKU.
+2. **Tab 2: Direktori Vendor / Supplier**:
+   - Sistem direktori profil penyuplai terintegrasi dengan Google Sheets menggunakan tabel baru `Suppliers`.
+   - Menampilkan kontak telepon kantor, email, performa ketepatan waktu pengiriman, katalog penawaran produk, serta dialog CRUD lengkap untuk pemeliharaan kemitraan secara dinamis.
+
+### 5g. Arsitektur Sub-Halaman Modul SDM & Gaji (HR Sub-Pages)
+Untuk mengelola manajemen sumber daya manusia secara terpadu dan presisi, Modul SDM & Gaji dipecah menjadi 3 sub-halaman berbasis Tab:
+1. **Tab 1: Direktori Karyawan**:
+   - Profil staf lengkap mencakup Nama Lengkap, Jabatan, Departemen, Gaji Pokok, Email, Tanggal Bergabung, dan Status Keaktifan.
+   - Dilengkapi widget ringkasan KPI (Total Karyawan, Karyawan Aktif, Total Pengeluaran Gaji Pokok).
+2. **Tab 2: Slip Gaji (Payroll Processing)**:
+   - Kalkulator gaji bulanan dinamis. Mengambil basis gaji pokok langsung dari sistem profil karyawan.
+   - Input manual Tunjangan Jabatan / Bonus (+), Potongan Absensi / Denda (-), dan perhitungan reaktif Gaji Bersih (Net).
+   - Aksi "Bayar Gaji" mengubah status slip gaji menjadi *Paid* dan otomatis mencatat pengeluaran rill di Buku Kas Keuangan.
+   - Pratinjau slip gaji bernuansa premium monokromik yang siap dicetak (*Printable Slip*).
+3. **Tab 3: Kehadiran & Cuti (Attendance & Leave)**:
+   - **Log Absensi Harian**: Form absensi harian staf mencakup status (Hadir, Sakit, Izin, Cuti, Alpa), jam masuk, jam pulang, dan catatan pendukung.
+   - **Permohonan Cuti**: Formulir permohonan cuti terintegrasi bagi staf (Tanggal mulai, Tanggal selesai, Alasan), dilengkapi dashboard manager untuk menyetujui (*Approve*) atau menolak (*Reject*) secara real-time.
+
+### 5h. Arsitektur Navigasi Bersarang & Pohon Visual di Sidebar (Nested Sidebar Navigation)
+Sistem navigasi utama dirombak untuk memberikan kemudahan akses langsung ke sub-halaman tanpa harus masuk ke halaman utama terlebih dahulu:
+1. **Menu Utama Expandable**: Menu dengan sub-halaman memiliki ikon chevron-down interaktif yang memutar 180 derajat saat di-expand.
+2. **Visual Tree (Diagram Pohon) Murni**: Sub-menu disusun di bawah menu utama dengan representasi cabang pohon visual yang elegan (garis vertikal batang utama dan garis lekukan melengkung horizontal murni menggunakan Tailwind border CSS `rounded-bl-md`).
+3. **Sorotan Cabang Aktif**: Saat sub-item aktif dipilih, cabang lengkung visual di sebelah kirinya akan bercahaya dengan aksen warna indigo semi-transparan (`border-indigo-400/60`), menyajikan feedback visual yang intuitif dan profesional.
+4. **Sinkronisasi Tab Sinkron**: Perubahan tab di dalam halaman akan otomatis mengubah penyorotan sub-menu aktif di sidebar, dan sebaliknya.
+
 ### 6. Optimasi Transisi Halaman & Manajemen Caching Ringan
 Aplikasi ini dikonfigurasi untuk menangani batasan koneksi asinkron Google Apps Script (`google.script.run`) melalui pendekatan frontend terarah:
 

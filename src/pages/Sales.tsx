@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { callGas, getGasCache } from '../api/gasClient';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
-import { Truck, CheckCircle, Clock, AlertCircle, ShoppingBag, ChevronDown } from 'lucide-react';
+import SalesCRM from '../components/SalesCRM';
+import ProductPerformance from '../components/ProductPerformance';
+import { Truck, CheckCircle, Clock, AlertCircle, ShoppingBag, ChevronDown, Users, BarChart3, Receipt } from 'lucide-react';
 
 interface SalesOrder {
   id: string;
@@ -14,11 +16,19 @@ interface SalesOrder {
   createdAt: string;
 }
 
-export default function SalesPage() {
+interface SalesPageProps {
+  activeTab?: 'orders' | 'crm' | 'performance';
+  setActiveTab?: (tab: 'orders' | 'crm' | 'performance') => void;
+}
+
+export default function SalesPage({ activeTab: propActiveTab, setActiveTab: propSetActiveTab }: SalesPageProps = {}) {
   const cached = getGasCache('Sales', 'get');
   const [orders, setOrders] = useState<SalesOrder[]>(cached || []);
   const [loading, setLoading] = useState(!cached);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [localActiveTab, setLocalActiveTab] = useState<'orders' | 'crm' | 'performance'>('orders');
+  const activeTab = propActiveTab || localActiveTab;
+  const setActiveTab = propSetActiveTab || setLocalActiveTab;
 
   // Form states
   const [customer, setCustomer] = useState('');
@@ -139,58 +149,105 @@ export default function SalesPage() {
 
   return (
     <div className="space-y-6 h-full flex flex-col animate-in fade-in duration-300">
-      {/* Visual KPI Widgets */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Omset Penjualan</span>
-            <p className="text-xl font-bold text-emerald-600 font-display">
-              Rp {orders.filter(o => o.status === 'Paid').reduce((sum, o) => sum + Number(o.total || 0), 0).toLocaleString('id-ID')}
-            </p>
-          </div>
-          <div className="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 flex items-center justify-center">
-            <ShoppingBag className="w-5 h-5 stroke-[2]" />
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pesanan Diproses</span>
-            <p className="text-xl font-bold text-blue-600 font-display">
-              {orders.filter(o => o.status === 'Sent' || o.status === 'Draft').length} Order
-            </p>
-          </div>
-          <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 flex items-center justify-center">
-            <Truck className="w-5 h-5 stroke-[2]" />
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Piutang Pelanggan</span>
-            <p className="text-xl font-bold text-amber-600 font-display">
-              Rp {orders.filter(o => o.status === 'Sent').reduce((sum, o) => sum + Number(o.total || 0), 0).toLocaleString('id-ID')}
-            </p>
-          </div>
-          <div className="w-11 h-11 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 flex items-center justify-center">
-            <Clock className="w-5 h-5 stroke-[2]" />
-          </div>
-        </div>
+      {/* Tab Navigation Switcher */}
+      <div className="flex border-b border-slate-300 bg-white rounded-2xl px-2 shadow-xs">
+        <button
+          onClick={() => setActiveTab('orders')}
+          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'orders'
+              ? 'border-slate-950 text-slate-950 font-black'
+              : 'border-transparent text-slate-400 hover:text-slate-600 font-bold'
+          }`}
+        >
+          <Receipt className="w-4 h-4" />
+          Pesanan & Faktur
+        </button>
+        <button
+          onClick={() => setActiveTab('crm')}
+          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'crm'
+              ? 'border-slate-950 text-slate-950 font-black'
+              : 'border-transparent text-slate-400 hover:text-slate-600 font-bold'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          Database Pelanggan (CRM)
+        </button>
+        <button
+          onClick={() => setActiveTab('performance')}
+          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'performance'
+              ? 'border-slate-950 text-slate-950 font-black'
+              : 'border-transparent text-slate-400 hover:text-slate-600 font-bold'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          Performa Produk
+        </button>
       </div>
 
       <div className="flex-1">
-        {loading ? (
-          <div className="animate-pulse space-y-4">
-            <div className="h-12 bg-slate-200/80 rounded-2xl w-1/4"></div>
-            <div className="h-72 bg-slate-200/80 rounded-2xl"></div>
+        {activeTab === 'orders' ? (
+          <div className="space-y-6 flex flex-col h-full">
+            {/* Visual KPI Widgets */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Omset Penjualan</span>
+                  <p className="text-xl font-bold text-emerald-600 font-display">
+                    Rp {orders.filter(o => o.status === 'Paid').reduce((sum, o) => sum + Number(o.total || 0), 0).toLocaleString('id-ID')}
+                  </p>
+                </div>
+                <div className="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 flex items-center justify-center">
+                  <ShoppingBag className="w-5 h-5 stroke-[2]" />
+                </div>
+              </div>
+              <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pesanan Diproses</span>
+                  <p className="text-xl font-bold text-blue-600 font-display">
+                    {orders.filter(o => o.status === 'Sent' || o.status === 'Draft').length} Order
+                  </p>
+                </div>
+                <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 flex items-center justify-center">
+                  <Truck className="w-5 h-5 stroke-[2]" />
+                </div>
+              </div>
+              <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.012)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.025)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Piutang Pelanggan</span>
+                  <p className="text-xl font-bold text-amber-600 font-display">
+                    Rp {orders.filter(o => o.status === 'Sent').reduce((sum, o) => sum + Number(o.total || 0), 0).toLocaleString('id-ID')}
+                  </p>
+                </div>
+                <div className="w-11 h-11 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 flex items-center justify-center">
+                  <Clock className="w-5 h-5 stroke-[2]" />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1">
+              {loading ? (
+                <div className="animate-pulse space-y-4">
+                  <div className="h-12 bg-slate-200/80 rounded-2xl w-1/4"></div>
+                  <div className="h-72 bg-slate-200/80 rounded-2xl"></div>
+                </div>
+              ) : (
+                <DataTable
+                  columns={columns}
+                  data={orders}
+                  searchKey="customer"
+                  searchPlaceholder="Cari berdasarkan nama customer..."
+                  onAddClick={handleAddClick}
+                  addLabel="Tambah Sales Order"
+                />
+              )}
+            </div>
           </div>
+        ) : activeTab === 'crm' ? (
+          <SalesCRM orders={orders} />
         ) : (
-          <DataTable
-            columns={columns}
-            data={orders}
-            searchKey="customer"
-            searchPlaceholder="Cari berdasarkan nama customer..."
-            onAddClick={handleAddClick}
-            addLabel="Tambah Sales Order"
-          />
+          <ProductPerformance orders={orders} />
         )}
       </div>
 

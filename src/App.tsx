@@ -19,7 +19,8 @@ import {
   Inbox,
   AlertTriangle,
   CheckCircle,
-  Info
+  Info,
+  ChevronDown
 } from 'lucide-react';
 
 import { callGas } from './api/gasClient';
@@ -54,6 +55,22 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Sub-pages tab states
+  const [salesTab, setSalesTab] = useState<'orders' | 'crm' | 'performance'>('orders');
+  const [financeTab, setFinanceTab] = useState<'ledger' | 'pandl' | 'reconcile'>('ledger');
+  const [inventoryTab, setInventoryTab] = useState<'list' | 'ledger' | 'adjustment'>('list');
+  const [procurementTab, setProcurementTab] = useState<'requisitions' | 'vendors'>('requisitions');
+  const [hrTab, setHrTab] = useState<'directory' | 'payroll' | 'attendance'>('directory');
+
+  // Expanded state for nested sidebar menus
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
+    Sales: true,
+    Finance: true,
+    Inventory: true,
+    Procurement: true,
+    HR: true,
+  });
 
   // Notifications state
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -152,16 +169,60 @@ export default function App() {
       title: 'MAIN MENU',
       items: [
         { id: 'Dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { id: 'Sales', icon: ShoppingBag, label: 'Penjualan (Sales)' },
-        { id: 'Finance', icon: DollarSign, label: 'Keuangan (Finance)' },
+        { 
+          id: 'Sales', 
+          icon: ShoppingBag, 
+          label: 'Penjualan (Sales)',
+          subItems: [
+            { id: 'orders', label: 'Pesanan Penjualan' },
+            { id: 'crm', label: 'Hubungan Pelanggan (CRM)' },
+            { id: 'performance', label: 'Kinerja Produk' }
+          ]
+        },
+        { 
+          id: 'Finance', 
+          icon: DollarSign, 
+          label: 'Keuangan (Finance)',
+          subItems: [
+            { id: 'ledger', label: 'Buku Besar' },
+            { id: 'pandl', label: 'Analisis Laba/Rugi' },
+            { id: 'reconcile', label: 'Rekonsiliasi Bank' }
+          ]
+        },
       ]
     },
     {
       title: 'OPERATIONS',
       items: [
-        { id: 'Inventory', icon: Package, label: 'Persediaan (Inventory)' },
-        { id: 'Procurement', icon: ShoppingCart, label: 'Pengadaan (Procurement)' },
-        { id: 'HR', icon: Users, label: 'Kepegawaian (HR)' },
+        { 
+          id: 'Inventory', 
+          icon: Package, 
+          label: 'Persediaan (Inventory)',
+          subItems: [
+            { id: 'list', label: 'Daftar Stok' },
+            { id: 'ledger', label: 'Mutasi Stok' },
+            { id: 'adjustment', label: 'Penyesuaian Stok' }
+          ]
+        },
+        { 
+          id: 'Procurement', 
+          icon: ShoppingCart, 
+          label: 'Pengadaan (Procurement)',
+          subItems: [
+            { id: 'requisitions', label: 'Permintaan PO' },
+            { id: 'vendors', label: 'Direktori Vendor' }
+          ]
+        },
+        { 
+          id: 'HR', 
+          icon: Users, 
+          label: 'Kepegawaian (HR)',
+          subItems: [
+            { id: 'directory', label: 'Direktori Karyawan' },
+            { id: 'payroll', label: 'Slip Gaji (Payroll)' },
+            { id: 'attendance', label: 'Kehadiran & Cuti' }
+          ]
+        },
       ]
     },
     {
@@ -187,15 +248,15 @@ export default function App() {
       case 'Dashboard':
         return <DashboardPage />;
       case 'Inventory':
-        return <InventoryPage />;
+        return <InventoryPage activeTab={inventoryTab} setActiveTab={setInventoryTab} />;
       case 'Finance':
-        return <FinancePage />;
+        return <FinancePage activeTab={financeTab} setActiveTab={setFinanceTab} />;
       case 'HR':
-        return <HRPage />;
+        return <HRPage activeTab={hrTab} setActiveTab={setHrTab} />;
       case 'Procurement':
-        return <ProcurementPage />;
+        return <ProcurementPage activeTab={procurementTab} setActiveTab={setProcurementTab} />;
       case 'Sales':
-        return <SalesPage />;
+        return <SalesPage activeTab={salesTab} setActiveTab={setSalesTab} />;
       case 'Reporting':
         return <ReportingPage />;
       case 'Settings':
@@ -249,28 +310,91 @@ export default function App() {
               )}
               
               {/* Items */}
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {group.items.map(item => {
                   const isActive = activeMenu === item.id;
+                  const isExpanded = expandedMenus[item.id];
+                  const hasSub = !!item.subItems;
+
                   return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        setActiveMenu(item.id);
-                        logSystem(`Navigasi ke modul ${item.label}.`, 'info');
-                      }}
-                      className={`w-full flex items-center px-3.5 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs tracking-wide gap-3 relative group cursor-pointer ${
-                        isActive 
-                          ? 'bg-slate-950 text-white shadow-[0_4px_12px_rgba(15,23,42,0.12)]' 
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                      }`}
-                      title={!isSidebarOpen ? item.label : undefined}
-                    >
-                      <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-700'}`} />
-                      <span className={`transition-all whitespace-nowrap ${!isSidebarOpen ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
-                        {item.label}
-                      </span>
-                    </button>
+                    <div key={item.id} className="space-y-0.5">
+                      <button
+                        onClick={() => {
+                          if (hasSub) {
+                            if (isActive) {
+                              setExpandedMenus(prev => ({ ...prev, [item.id]: !prev[item.id] }));
+                            } else {
+                              setActiveMenu(item.id);
+                              setExpandedMenus(prev => ({ ...prev, [item.id]: true }));
+                            }
+                          } else {
+                            setActiveMenu(item.id);
+                          }
+                          logSystem(`Navigasi ke modul ${item.label}.`, 'info');
+                        }}
+                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs tracking-wide gap-3 relative group cursor-pointer ${
+                          isActive 
+                            ? 'bg-slate-950 text-white shadow-[0_4px_12px_rgba(15,23,42,0.12)]' 
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                        }`}
+                        title={!isSidebarOpen ? item.label : undefined}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-700'}`} />
+                          <span className={`transition-all whitespace-nowrap truncate ${!isSidebarOpen ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+                            {item.label}
+                          </span>
+                        </div>
+                        {hasSub && isSidebarOpen && (
+                          <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 flex-shrink-0 ${
+                            isExpanded ? 'rotate-180 text-white' : ''
+                          }`} />
+                        )}
+                      </button>
+
+                      {/* Sub-menu rendering with beautiful visual branching tree lines */}
+                      {isSidebarOpen && hasSub && isExpanded && (
+                        <div className="pl-6 relative mt-1 ml-2.5 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                          {/* Batang vertikal pohon */}
+                          <div className="absolute left-[9px] top-0 bottom-3 w-px bg-slate-200 pointer-events-none"></div>
+                          
+                          {item.subItems!.map((sub, idx) => {
+                            let isSubActive = false;
+                            if (item.id === 'Sales' && salesTab === sub.id && isActive) isSubActive = true;
+                            if (item.id === 'Finance' && financeTab === sub.id && isActive) isSubActive = true;
+                            if (item.id === 'Inventory' && inventoryTab === sub.id && isActive) isSubActive = true;
+                            if (item.id === 'Procurement' && procurementTab === sub.id && isActive) isSubActive = true;
+                            if (item.id === 'HR' && hrTab === sub.id && isActive) isSubActive = true;
+
+                            return (
+                              <button
+                                key={sub.id}
+                                onClick={() => {
+                                  setActiveMenu(item.id);
+                                  if (item.id === 'Sales') setSalesTab(sub.id as any);
+                                  if (item.id === 'Finance') setFinanceTab(sub.id as any);
+                                  if (item.id === 'Inventory') setInventoryTab(sub.id as any);
+                                  if (item.id === 'Procurement') setProcurementTab(sub.id as any);
+                                  if (item.id === 'HR') setHrTab(sub.id as any);
+                                  logSystem(`Navigasi ke sub-modul ${item.label} > ${sub.label}.`, 'info');
+                                }}
+                                className={`w-full flex items-center pl-4 pr-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-150 relative cursor-pointer ${
+                                  isSubActive 
+                                    ? 'text-indigo-600 bg-indigo-50/40 font-bold' 
+                                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                                }`}
+                              >
+                                {/* Lekukan visual melengkung ke sub-menu */}
+                                <span className={`absolute left-[-16px] top-0 h-1/2 w-3.5 border-l border-b ${
+                                  isSubActive ? 'border-indigo-400/60' : 'border-slate-200'
+                                } rounded-bl-md pointer-events-none`} />
+                                <span className="truncate">{sub.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>

@@ -1,3 +1,95 @@
+## 2026-07-02 — v1.4.0
+
+### Ditambahkan / Diubah (Navigasi Bersarang dengan Pohon Visual di Sidebar)
+- **Restrukturisasi Sidebar ERP Utama (`App.tsx`)**:
+  - Menambahkan dukungan untuk `subItems` di bawah kelompok menu yang memiliki tab sub-halaman (Keuangan, Penjualan, Persediaan, Pengadaan, Kepegawaian).
+  - Mengimplementasikan sistem pelacakan state `expandedMenus` untuk mendukung fitur expand/collapse sub-menu secara interaktif menggunakan ikon chevron-down berputar.
+  - Membangun **diagram pohon visual (nested visual tree lines)** murni menggunakan lekukan CSS `border-l border-b border-slate-200 rounded-bl-md`.
+  - Mengonfigurasi penyorotan cabang aktif (cabang visual melengkung berubah menjadi warna indigo semi-transparan `border-indigo-400/60` saat sub-item aktif).
+- **Sinkronisasi State Antara Sidebar dan Halaman Modul**:
+  - Mengangkat state tab aktif dari tingkat halaman lokal ke tingkat global `App.tsx` (`salesTab`, `financeTab`, `inventoryTab`, `procurementTab`, `hrTab`).
+  - Memodifikasi seluruh halaman sub-modul (`Sales.tsx`, `Finance.tsx`, `Inventory.tsx`, `Procurement.tsx`, `HR.tsx`) agar menerima prop opsional `activeTab` dan `setActiveTab`, memungkinkan navigasi dua arah yang harmonis.
+
+---
+
+## 2026-07-02 — v1.3.0
+
+### Ditambahkan / Diubah (Modul SDM, Payroll, dan Absensi/Cuti Terpadu)
+- **Implementasi Halaman Multi-Tab Modul SDM & Gaji (HR Page)**:
+  - **Tab 1: Direktori Karyawan**: Menampilkan KPI vital (Total Karyawan Terdaftar, Karyawan Aktif, Total Pengeluaran Gaji Pokok). Tabel mendukung input lengkap: Nama Lengkap, Jabatan, Departemen, Gaji Pokok, Email, Tanggal Mulai Bergabung (Join Date), dan Status Keaktifan (Active/Inactive), yang disinkronkan secara asinkron ke Google Sheets.
+  - **Tab 2: Slip Gaji (Payroll Processing)**: Kalkulator gaji bulanan modern. Pengguna dapat memilih karyawan aktif (otomatis mengambil Gaji Pokok dari sistem), mengonfigurasi Tunjangan Jabatan/Bonus (+), Potongan Absensi/Denda (-), menghitung Gaji Bersih (Net Salary), serta menyimpan slip gaji berkemampuan *Draft* atau *Paid*. Melalui aksi asinkron "Bayar Gaji", status berubah menjadi *Paid* dan pengeluaran kas otomatis dicatat di pembukuan Buku Besar Keuangan. Dilengkapi pratinjau slip gaji yang siap cetak (printable slip).
+  - **Tab 3: Kehadiran & Cuti (Attendance & Leave)**:
+    - **Absensi Harian**: Form interaktif "Catat Absensi" untuk melacak status check-in, check-out, serta keterangan untuk status Hadir, Sakit, Izin, Cuti, dan Mangkir (Alpa).
+    - **Permohonan Cuti**: Form pengajuan cuti dengan tanggal mulai, tanggal selesai, alasan cuti, dan alur persetujuan manager (*Pending*, *Approved*, *Rejected*).
+- **Pembaruan Skema GAS (00-setup.gs)**:
+  - Memperbarui kolom tabel `HR` dengan header: `['id', 'employeeName', 'position', 'department', 'status', 'email', 'salary', 'joinDate', 'createdAt']`.
+  - Mendaftarkan tabel baru `Attendance` dengan header: `['id', 'employeeName', 'date', 'status', 'checkIn', 'checkOut', 'notes', 'createdAt']`.
+  - Mendaftarkan tabel baru `LeaveRequests` dengan header: `['id', 'employeeName', 'startDate', 'endDate', 'reason', 'status', 'createdAt']`.
+  - Mendaftarkan tabel baru `Payroll` with header: `['id', 'employeeName', 'month', 'basicSalary', 'allowance', 'deduction', 'netSalary', 'status', 'createdAt']`.
+- **Modifikasi Modul GAS HR (13-hr.gs)**:
+  - Menambahkan dukungan CRUD terperinci untuk tabel `HR` dengan data Departemen dan Tanggal Mulai Join.
+  - Membuat API asinkron untuk Absensi (`getAttendance`, `createAttendance`).
+  - Membuat API asinkron untuk Pengajuan Cuti (`getLeaves`, `createLeave`, `approveLeave`, `rejectLeave`).
+  - Membuat API asinkron untuk Payroll (`getPayrolls`, `createPayroll`, `payPayroll`) yang secara cerdas menghubungkan pengeluaran Payroll ke pencatatan transaksi kas `Finance`.
+
+---
+
+## 2026-07-02 — v1.2.0
+
+### Ditambahkan / Diubah (Arsitektur Sub-Modul Pengadaan & Direktori Vendor Mitra)
+- **Implementasi Halaman Multi-Tab Modul Pengadaan (Procurement)**:
+  - **Tab 1: Pengajuan Pembelian (Requisitions)**: Formulir pengajuan pengadaan asinkron lengkap dengan status persetujuan (*Pending*, *Approved*, *Rejected*). Disertai fitur *Auto-Reconcile* di mana penyetujuan pengadaan otomatis mencatat transaksi pengeluaran (Expense) di Buku Kas Keuangan, serta mengoreksi sisa stok reaktif dan mencatat mutasi masuk di modul Inventaris jika produk terdaftar.
+  - **Tab 2: Direktori Vendor / Supplier**: Modul manajemen database rekanan penyuplai (*Suppliers*) terintegrasi dengan Google Sheets menggunakan tabel baru `Suppliers`. Menampilkan data kontak ponsel, email, performa ketepatan pengiriman (Delivery Performance), serta daftar katalog produk yang ditawarkan mitra vendor lengkap dengan dialog CRUD asinkron.
+- **Pembaruan Skema GAS (00-setup.gs)**:
+  - Mendaftarkan tabel baru `Suppliers` dengan kolom header: `id`, `name`, `contact`, `email`, `deliveryPerformance`, `catalog`, `createdAt`.
+- **Modifikasi Modul GAS Pengadaan (14-procurement.gs)**:
+  - Menambahkan aksi asinkron `getSuppliers`, `createSupplier`, `updateSupplier`, dan `deleteSupplier` untuk sinkronisasi direktori mitra.
+  - Memperbarui penanganan status aksi `approve` dengan melampirkan pelaporan otomatis ke Buku Besar Keuangan dan penambahan stok otomatis ke Buku Mutasi Inventaris.
+
+---
+
+## 2026-07-02 — v1.1.0
+
+### Ditambahkan / Diubah (Sub-Modul Inventaris & Gudang Terpadu dengan Stock Opname Audit)
+- **Implementasi Halaman Multi-Tab Modul Stok & Gudang (Inventory)**:
+  - **Tab 1: Stok Barang Aktual (Stock List)**: Menampilkan KPI vital (Total Macam SKU, SKU Kritis/Stok Minim, Estimasi Nilai Aset berbasis HPP). Tabel pencatatan stok mendukung pelacakan Harga Pokok Penjualan (HPP) dan Harga Jual per produk secara presisi, terhubung langsung ke Google Sheets.
+  - **Tab 2: Riwayat Mutasi (Stock Ledger)**: Log kronologis asinkron terperinci yang mencatat arus keluar masuk unit barang (Initial, In, Out, Adjustment). Memudahkan audit stok harian dengan rincian rentang stok terdahulu, stok terbaru, serta deskripsi keterangan mutasi.
+  - **Tab 3: Opname Fisik (Stock Adjustment)**: Workspace audit fisik khusus untuk mendeteksi selisih antara sistem komputer dengan rak gudang nyata. Menyediakan perhitungan selisih asinkron reaktif (Surplus, Defisit, atau Netral) disertai dialog alasan koreksi, yang langsung memperbarui sisa stok di Google Sheets secara aman.
+- **Pembaruan Skema GAS (00-setup.gs)**:
+  - Memperbarui kolom tabel `Inventory` dengan penambahan kolom `purchasePrice` (HPP) dan `sellingPrice` (Harga Jual).
+  - Menambahkan tabel baru `StockMutations` dengan kolom header: `id`, `sku`, `name`, `type`, `quantity`, `prevQty`, `newQty`, `description`, `createdAt`.
+- **Modifikasi Modul GAS Inventaris (11-inventory.gs)**:
+  - Menambahkan dukungan mutasi log pada aksi `create` (pencatatan stok awal) dan `update` (jika kuantitas diedit).
+  - Mengimplementasikan aksi baru `getMutations` dan `adjust` (Opname Fisik) untuk menjamin persistensi audit yang kuat di sisi Google Sheets.
+
+---
+
+## 2026-07-02 — v1.0.0
+
+### Ditambahkan / Diubah (Arsitektur Sub-Modul Penjualan Terpadu & CRM Pelanggan)
+- **Implementasi Halaman Multi-Tab Modul Penjualan (Sales)**:
+  - **Tab 1: Pesanan & Faktur (Sales Orders)**: Workspace pelacakan transaksi penjualan, pembuatan pesanan (*Sales Order*) baru via modal dialog asinkron, serta penyesuaian status pembayaran (*Draft*, *Sent*, *Paid*, *Cancelled*) yang langsung berintegrasi dengan pembukuan otomatis Buku Besar Keuangan.
+  - **Tab 2: Database Pelanggan (CRM)**: Modul pengelolaan pelanggan yang komprehensif. Menampilkan kontak ponsel, email, status, dan menghitung poin loyalitas dinamis serta sisa piutang dagang aktif berdasarkan transaksi berjalan. Dilengkapi dialog tambah/edit pelanggan yang sinkron ke database Google Sheets.
+  - **Tab 3: Performa Produk**: Dashboard analitis real-time yang memetakan performa produk inventaris terdaftar (Top SKU). Menghitung kontribusi omset penjualan per SKU, unit terjual, rasio SKU produktif, sisa stok gudang, serta penentuan otomatis performa produk (*Best Seller*, *Moderate*, *Slow Moving*) lengkap dengan visualisasi Horizontal SVG Bar Chart reaktif.
+- **Pembaruan Skema GAS (00-setup.gs)**:
+  - Mendaftarkan tabel baru `Customers` dengan kolom header: `id`, `name`, `contact`, `email`, `loyaltyPoints`, `receivable`, `createdAt`.
+- **Modifikasi Modul GAS Penjualan (15-sales.gs)**:
+  - Menambahkan aksi asinkron `getCustomers`, `createCustomer`, `updateCustomer`, dan `deleteCustomer` untuk menjamin persistensi data CRM pelanggan seutuhnya di Google Sheets.
+
+---
+
+## 2026-07-02 — v0.9.0
+
+### Ditambahkan / Diubah (Sub-Modul Keuangan Terintegrasi Google Sheets & Analisis SVG Donat)
+- **Halaman dalam Halaman (Sub-Halaman) Modul Keuangan**:
+  - **Tab 1: Buku Besar Kas (General Ledger)**: Menampilkan KPI statistik utama (Pemasukan, Pengeluaran, Laba Bersih), input transaksi terpadu, serta tabel pencatatan transaksi manual lengkap dengan sinkronisasi Sheets.
+  - **Tab 2: Analisis Laba Rugi (P&L Summary)**: Visualisasi Donat SVG interaktif buatan sendiri (Custom Donut Chart) dengan efek sorot (*hover*) reaktif dan progress bar detail per kategori alokasi dana (Beban vs Pendapatan).
+  - **Tab 3: Rekonsiliasi Kas & Bank**: Workspace komparasi real-time yang membandingkan mutasi internal Buku Besar dengan mutasi eksternal rekening koran bank. Dilengkapi asisten pencocokan otomatis (*auto-reconcile*) dan opsi pencatatan selisih instan yang langsung terupdate ke basis data Google Sheets.
+- **Pembaruan Skema GAS (setup.gs)**:
+  - Menambahkan kolom status `reconciled` dan `bankRef` pada inisialisasi tabel `Finance` untuk menjamin persistensi pencatatan rekonsiliasi yang sesungguhnya di sisi Google Sheets.
+
+---
+
 ## 2026-07-02 — v0.8.1
 
 ### Ditambahkan / Diubah (Penggelapan Batas Border - High Contrast Slate)
