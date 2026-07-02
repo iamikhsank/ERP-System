@@ -29,12 +29,12 @@
 </script>
 ```
 
-### 3. Konfigurasi Vite & Pembatasan Panjang Baris (Limit 300 Chars)
+### 3. Konfigurasi Vite & Optimasi Ukuran Berkas Menggunakan Terser Minification
 Vite dikonfigurasi menggunakan plugin `vite-plugin-singlefile` agar seluruh aset lokal (seperti CSS Tailwind terkompilasi) di-inline ke dalam satu file `index.html`. 
 
-Untuk memastikan stabilitas eksekusi di Google Apps Script editor, seluruh library berat (**React**, **React-DOM**, **Lucide-React**, **Motion**) telah **dieksternalisasi secara penuh ke CDN via Import Maps**, sehingga ukuran bundle HTML berkurang drastis (hanya memuat logika bisnis lokal). 
+Untuk memastikan stabilitas eksekusi di Google Apps Script editor, seluruh library berat (**React**, **React-DOM**, **Lucide-React**, **Recharts**, **XLSX**) telah **dieksternalisasi secara penuh ke CDN via Import Maps**, sehingga ukuran bundle HTML berkurang drastis (hanya memuat logika bisnis lokal) serta menghindari duplikasi instansiasi React (anti dual-react instance).
 
-Selain itu, opsi `minify: false` diaktifkan di `vite.config.ts`, serta diterapkan skrip pasca-proses otomatis (**safe line-splitter** di `/scripts/build-gas.mjs`) yang memotong dan merapikan seluruh baris kode yang melebihi **300 karakter** tanpa merusak sintaksis (misalnya membagi import multipel, class CSS panjang, atau baris HTML panjang pada pemisah aman seperti koma `,`, spasi ` `, atau titik koma `;`).
+Selain itu, opsi `minify: 'terser'` diaktifkan di `vite.config.ts` untuk mengompresi kode produksi secara aman tanpa merusak struktur sintaksis token (tidak memicu SyntaxError akibat pemotongan karakter sembarangan). Skrip pasca-proses otomatis di `/scripts/build-gas.mjs` juga menggunakan fungsi penyelarasan spasi terarah `formatHtmlForGas` yang membersihkan spasi redundan di antara tag HTML untuk menjamin kebersihan dan keringanan ukuran file saat di-sync ke `Dashboard-for-Spreadsheet.html` dan `Dashboard-for-Spreadsheet.txt`.
 
 ### 3a. Penanganan Galat Global (ErrorBoundary)
 Untuk mencegah terjadinya layar putih kosong (blank white screen) jika terjadi kegagalan eksekusi JavaScript (misal masalah pemuatan CDN atau bentrokan state asinkron):
