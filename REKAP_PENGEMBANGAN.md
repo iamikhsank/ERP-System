@@ -1,3 +1,15 @@
+## 2026-07-02 — v0.5.3
+
+### Ditambahkan / Diperbaiki
+- **Persistensi Data Lokal Mode DEV (`localStorage`)**:
+  - Mengganti mock data statis di dalam `gasClient.ts` dengan penyimpanan berbasis `localStorage` (`erp_mock_data`). Data yang dimasukkan atau diubah pengguna tidak akan hilang lagi saat halaman di-refresh di browser pengembangan.
+  - Menginisialisasi data bawaan (laptop, mouse, transaksi keuangan, karyawan) secara otomatis saat pertama kali dibuka.
+- **Kalkulasi Metrik Dashboard Dinamis**:
+  - Menggantikan angka metrik dashboard hardcoded di mode DEV dengan algoritma perhitungan dinamis yang menghitung total pendapatan, jumlah pesanan, karyawan aktif, dan item stok rendah secara real-time langsung dari data di `localStorage`.
+  - Membuat grafik arus kas bulanan dinamis berdasarkan riwayat transaksi yang tersimpan, serta daftar aktivitas sistem terbaru yang diperbarui secara dinamis dari modul Sales, Inventory, dan Procurement.
+
+---
+
 ## 2026-07-02 — v0.5.2
 
 ### Dihapus / Dioptimalkan

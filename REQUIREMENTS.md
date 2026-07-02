@@ -69,9 +69,11 @@ Aplikasi ini dikonfigurasi untuk menangani batasan koneksi asinkron Google Apps 
    - Pada saat unmount (misal ketika pengguna berpindah menu), pembaruan state pada promise yang sedang berjalan otomatis dibatalkan/di-kill, menghindari tumpukan proses di browser (backlog threads) dan menjaga kinerja aplikasi tetap responsif.
 
 ### 7. Isolasi Data Rilis Produksi vs. Lokal
-Untuk memastikan rilis produksi (`Dashboard-for-Spreadsheet.html` dan `Dashboard-for-Spreadsheet.txt`) benar-benar bersih dari data sampel/dummy dan hanya terhubung ke Google Sheets:
-1. **Tree-Shaking Data Dummy**: Variabel `mockData` di `/src/api/gasClient.ts` hanya diakses dalam blok kondisi `if ((import.meta as any).env.DEV)`. Saat dijalankan dalam skrip produksi (`npm run build`), modul bundler Vite secara otomatis memotong (tree-shaking) seluruh struktur data dummy tersebut agar tidak masuk ke hasil kompilasi akhir.
-2. **Kewajiban Lingkungan Google Sheets**: Jika aplikasi rilis produksi dibuka di luar platform Google Sheets (yaitu `window.google.script` tidak terdeteksi), sistem secara otomatis memblokir pemanggilan asinkron dan memberikan pesan kesalahan edukatif berbahasa Indonesia yang memandu pengguna untuk mengaksesnya melalui Google Sheets.
+Untuk memastikan rilis produksi (`Dashboard-for-Spreadsheet.html`) benar-benar bersih dari data sampel/dummy dan hanya terhubung ke Google Sheets:
+1. **Penyimpanan Lokal Persisten (`localStorage`)**: Di mode pengembangan lokal/AI Studio Preview (`DEV` mode), data tidak lagi disimpan di memori RAM transien yang gampang hilang. Data disimpan ke dalam `localStorage` (`erp_mock_data`) secara persisten, sehingga input data pengguna tetap utuh saat halaman di-refresh.
+2. **Kalkulasi Metrik Lokal Dinamis**: Metrik Dashboard dihitung secara dinamis dari data `localStorage` menggunakan formula yang persis sama dengan backend GAS, bukan menggunakan data tiruan yang di-hardcode.
+3. **Tree-Shaking Data Dummy**: Logika mock lokal ini hanya aktif dalam blok kondisi `if ((import.meta as any).env.DEV)`. Saat dijalankan dalam skrip produksi (`npm run build`), modul bundler Vite secara otomatis memotong (tree-shaking) seluruh logika mock agar tidak masuk ke hasil kompilasi akhir.
+4. **Kewajiban Lingkungan Google Sheets**: Jika aplikasi rilis produksi dibuka di luar platform Google Sheets (yaitu `window.google.script` tidak terdeteksi), sistem secara otomatis memblokir pemanggilan asinkron dan memberikan pesan kesalahan edukatif berbahasa Indonesia yang memandu pengguna untuk mengaksesnya melalui Google Sheets.
 
 ### 8. Integrasi CRUD Penuh & Perhitungan Waktu Nyata (Real-Time)
 1. **Fungsi CRUD Google Sheets**: Semua halaman modul utama telah diintegrasikan secara penuh dengan fungsi database Google Sheets di `/gas-src/99-utils.gs` (`insertRow`, `updateRow`, `deleteRow`). Perubahan data dari pengguna disimpan langsung secara persisten ke sheet masing-masing.
