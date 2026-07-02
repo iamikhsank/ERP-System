@@ -1,16 +1,23 @@
 // 01-main.gs
 
 function doGet(e) {
-  // Security best practices for Google Apps Script HTML Service:
-  // - NATIVE sandbox mode required for google.script.run() to work
-  // - Server-side validation prevents iframe escape attacks
-  // - Never trust client-side validation alone
-  return HtmlService.createHtmlOutputFromFile('webapp')
+  // Mencoba memuat file html 'Dashboard-for-Spreadsheet' terlebih dahulu, 
+  // jika tidak ada, fallback ke 'webapp' atau 'index'
+  let htmlOutput;
+  try {
+    htmlOutput = HtmlService.createHtmlOutputFromFile('Dashboard-for-Spreadsheet');
+  } catch (err) {
+    try {
+      htmlOutput = HtmlService.createHtmlOutputFromFile('webapp');
+    } catch (err2) {
+      htmlOutput = HtmlService.createHtmlOutputFromFile('index');
+    }
+  }
+
+  return htmlOutput
     .setTitle('ERP System')
-    .setSandboxMode(HtmlService.SandboxMode.NATIVE)
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-    .addMetaTag('X-UA-Compatible', 'IE=Edge');
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
 function processApiRequest(module, action, payload) {
